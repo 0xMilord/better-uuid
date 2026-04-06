@@ -1,3 +1,7 @@
+## 0.0.1 (2026-04-06)
+
+- feat: implement core UUID generation and parsing logic with WASM and JS engine support
+
 # Changelog
 
 ## 0.1.0 (2026-04-06)
