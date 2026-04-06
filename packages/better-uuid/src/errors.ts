@@ -2,7 +2,7 @@
 // better-uuid — Typed error classes
 // ---------------------------------------------------------------------------
 
-import type { StrategyName } from "./types";
+import type { StrategyName } from "./types.js";
 
 /** Base error for all better-uuid exceptions. */
 export class BetterUuidError extends Error {

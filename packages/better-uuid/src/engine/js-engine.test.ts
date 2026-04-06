@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createJsEngine, type JsEngine } from "./js-engine";
+import { createJsEngine, type JsEngine } from "./js-engine.js";
 
 describe("JS Engine — unit tests", () => {
   let engine: JsEngine;

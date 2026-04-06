@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseId, createId, isLegacyId } from "./index";
+import { parseId, createId, isLegacyId } from "./index.js";
 import { readFileSync } from "node:fs";
 import { resolve, join } from "node:path";
 

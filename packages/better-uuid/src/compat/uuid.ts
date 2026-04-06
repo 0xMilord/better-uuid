@@ -5,7 +5,7 @@
 // Teams replace the import; behavior is unchanged until they flip strategy.
 // ---------------------------------------------------------------------------
 
-import { createId, parseId } from "../index";
+import { createId, parseId } from "../index.js";
 
 /**
  * Generate a UUID v4 (random).

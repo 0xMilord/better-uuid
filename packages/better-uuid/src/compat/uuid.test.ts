@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { v4, v7, validate, NIL } from "../compat/uuid";
+import { v4, v7, validate, NIL } from "../compat/uuid.js";
 
 describe("compat/uuid", () => {
   it("v4 returns UUID-shaped string", () => {

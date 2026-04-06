@@ -2,7 +2,7 @@
 // better-uuid — Engine initialization (WASM → JS fallback)
 // ---------------------------------------------------------------------------
 
-import { createJsEngine, type JsEngine } from "./js-engine";
+import { createJsEngine, type JsEngine } from "./js-engine.js";
 
 // WASM module reference (lazy)
 let wasmModule: JsEngine | null = null;

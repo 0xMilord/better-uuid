@@ -9,8 +9,8 @@ import {
   withIdContext,
   isWasm,
   init,
-} from "./index";
-import { GenerateError, ParseError, BetterUuidError } from "./errors";
+} from "./index.js";
+import { GenerateError, ParseError, BetterUuidError } from "./errors.js";
 
 // ---------------------------------------------------------------------------
 // createId — unit tests

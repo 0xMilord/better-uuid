@@ -75,6 +75,7 @@ Use the [feature request form](https://github.com/better-uuid/better-uuid/issues
 - Strict mode: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`.
 - No `any` — use `unknown` + type guards.
 - All public APIs documented with JSDoc.
+- **Relative imports must use a `.js` extension** (e.g. `./errors.js`) so published ESM loads under **Node’s native resolver** (`tsconfig.build.json` uses `module: "NodeNext"`).
 
 ### Git
 

@@ -8,7 +8,7 @@
 // ```
 // ---------------------------------------------------------------------------
 
-import { createId } from "../index";
+import { createId } from "../index.js";
 
 /**
  * Opinionated default ID generation.

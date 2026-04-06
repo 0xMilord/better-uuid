@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { nanoid, customAlphabet } from "../compat/nanoid";
+import { nanoid, customAlphabet } from "../compat/nanoid.js";
 
 describe("compat/nanoid", () => {
   it("nanoid() returns 21-char URL-safe string by default", () => {

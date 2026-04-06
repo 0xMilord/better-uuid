@@ -7,8 +7,8 @@ import type {
   CreateIdOptions,
   ParsedId,
   StrategyName,
-} from "./types";
-import { GenerateError } from "./errors";
+} from "./types.js";
+import { GenerateError } from "./errors.js";
 
 export {
   BetterUuidError,
@@ -18,10 +18,10 @@ export {
   type CreateIdOptions,
   type ParsedId,
   type StrategyName,
-} from "./types";
+} from "./types.js";
 
 // Engine (lazy init)
-import { initEngine, getEngineSync, isWasmAvailable } from "./engine/wasm-loader";
+import { initEngine, getEngineSync, isWasmAvailable } from "./engine/wasm-loader.js";
 
 // ---------------------------------------------------------------------------
 // Module singleton — stores org-wide defaults from createId.configure()

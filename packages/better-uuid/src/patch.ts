@@ -11,7 +11,7 @@
 // See ARCHITECTURE.md §9.1 for full risk documentation.
 // ---------------------------------------------------------------------------
 
-import { createId } from "./index";
+import { createId } from "./index.js";
 
 function isPatchEnabled(): boolean {
   // Check for BETTER_UUID_PATCH=1 in Node.js environments

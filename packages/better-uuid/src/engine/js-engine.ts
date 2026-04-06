@@ -5,8 +5,8 @@
 // Provides identical API to the WASM engine for seamless fallback.
 // ---------------------------------------------------------------------------
 
-import type { ParsedId, StrategyName } from "../types";
-import { BetterUuidError, GenerateError, ParseError } from "../errors";
+import type { ParsedId, StrategyName } from "../types.js";
+import { BetterUuidError, GenerateError, ParseError } from "../errors.js";
 
 // ---------------------------------------------------------------------------
 // UUID v4 generation (122 CSPRNG bits)
