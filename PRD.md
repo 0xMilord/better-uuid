@@ -107,6 +107,20 @@ UUID v7 solves **time ordering** in a standard shape. It does **not** solve sema
 
 We are not "replacing the RFC." We are **standardizing how apps wrap and explain IDs** in logs, DBs, and traces—while still allowing RFC outputs when required.
 
+### 5.0.2 Competitive positioning (beyond UUID)
+
+Engineers don't choose between "UUID vs us." They choose between 5+ ID strategies. Here's the honest landscape:
+
+| Library | What it does | What it doesn't | Why better-uuid exists |
+|---------|-------------|-----------------|----------------------|
+| **`uuid` / `crypto.randomUUID()`** | Standard random UUIDs | No ordering, no semantics, no parse | We add structure, not just randomness |
+| **UUID v7 (RFC)** | Time-ordered standard | No prefix, no semantics, no parse, no ecosystem compat | We add prefix, parse, and drop-in migration |
+| **nanoid** | Short, random, configurable length | Not sortable, not parseable, no structure | We add sortability and inspectability while matching length/alphabet |
+| **ULID** | Sortable, Crockford base32 | No prefix, no semantics, no JS ecosystem compat (uuid/nanoid aliases) | We add prefix, parse, and compat layer |
+| **Snowflake libs** | Distributed, time-leading | Varies wildly by impl; no unified API, no parse standard | We provide a single API with documented bit layout and failure modes |
+
+**The difference:** every other library generates a string. We generate a **documented structure** you can inspect without a decoder ring — while still being able to *output* their strings when you need compat.
+
 ### 5.1 Strategy name mapping (canonical reference)
 
 To avoid confusion between user-facing API names, Rust trait names, and PRD requirement IDs, this table is **normative**:
@@ -398,6 +412,7 @@ isLegacyId(someId); // boolean
 | Deterministic IDs enable probing | Document threat model; use salted hash option for public-facing IDs |
 | "Cool library" with no migration path | `ADOPTION.md`, compat layer, legacy `parseId`, CLI migrate, DB playbook in README funnel |
 | Bundle-size rejection in frontend | Ship and gate **`better-uuid/core`** sizes; document import map |
+| "Why not just use nanoid/ULID?" | Competitive positioning in README + PRD §5.0.2; drop-in compat removes switching cost |
 
 ---
 

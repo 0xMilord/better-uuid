@@ -6,6 +6,91 @@
 
 ---
 
+## 0. Copy-paste migration (start here)
+
+**Pick your situation. Copy the block. Move on.**
+
+### Situation A: "We use `uuid` package"
+
+```diff
+- import { v4 as uuidv4 } from "uuid";
++ import { v4 as uuidv4 } from "better-uuid/compat/uuid";
+```
+
+Same function. Same output shape. Now you can flip to `strategy: "time"` later without changing call sites.
+
+### Situation B: "We use `nanoid`"
+
+```diff
+- import { nanoid } from "nanoid";
++ import { nanoid } from "better-uuid/compat/nanoid";
+```
+
+Same default length (21). Same alphabet. Drop-in.
+
+### Situation C: "We use `crypto.randomUUID()`"
+
+```diff
+- import { randomUUID } from "crypto";
+- const id = randomUUID();
++ import { createId } from "better-uuid";
++ const id = createId({ strategy: "uuidv4" }); // RFC-shaped
+```
+
+Or go nuclear (app-only, **not** in shared libraries):
+
+```ts
+// One import at the very top of your entry point
+import "better-uuid/patch";
+// Now every call to crypto.randomUUID() in your entire process routes through better-uuid.
+// Requires BETTER_UUID_PATCH=1 env var. See §7.
+```
+
+### Situation D: "I don't want to touch every file"
+
+```js
+// vite.config.js
+export default {
+  resolve: {
+    alias: {
+      uuid: "better-uuid/compat/uuid",
+      nanoid: "better-uuid/compat/nanoid",
+    },
+  },
+};
+```
+
+```js
+// webpack.config.js
+module.exports = {
+  resolve: {
+    alias: {
+      uuid: "better-uuid/compat/uuid",
+      nanoid: "better-uuid/compat/nanoid",
+    },
+  },
+};
+```
+
+```js
+// next.config.js
+/** @type {import('next').NextConfig} */
+module.exports = {
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      uuid: "better-uuid/compat/uuid",
+      nanoid: "better-uuid/compat/nanoid",
+    };
+    return config;
+  },
+};
+```
+
+**One config change.** Every import in your codebase routes through better-uuid. Run tests. If green, you're done with Layer 1.
+
+---
+
 ## 1. Mental model: three layers (do not skip Layer 1)
 
 | Layer | Who | What |
@@ -230,16 +315,73 @@ If `id_v2` rollout fails:
 
 ---
 
-## 10. Failure modes (what operators do)
+## 10. Failure modes (what operators do — with examples)
 
-Snowflake-class generation can fail closed: **clock regression**, **sequence exhaustion**. Policies: `wait` | `error` | `fallback` (see PRD §7.1). **Never** silently duplicate IDs.
+Snowflake-class generation can fail closed. **You choose the policy; we enforce it. Never silent duplicates.**
+
+### Clock regression (NTP stepped backward)
+
+```ts
+createId({
+  strategy: "snowflake",
+  node: 42,
+  region: "in-west",
+  onClockRegression: "fallback",  // "wait" | "error" | "fallback"
+});
+```
+
+**If `fallback`:** emits a UUID v4-shaped ID and logs a warning:
+
+```json
+{
+  "level": "warn",
+  "event": "ClockRegressed",
+  "action": "Emitted uuidv4 fallback",
+  "lastTimestamp": 1712345678901,
+  "currentTimestamp": 1712345678899,
+  "node": 42,
+  "region": "in-west"
+}
+```
+
+**If `error`:** throws `ClockRegressed` — your app returns 503 with retry-after.
+
+**If `wait`:** blocks until `now >= lastTimestamp` (with configurable timeout cap).
+
+### Sequence exhaustion (too many IDs in one ms)
+
+```ts
+createId({
+  strategy: "snowflake",
+  onSequenceExhausted: "error",  // "error" | "wait"
+});
+```
+
+**If `error`:** throws `SequenceExhausted` — retry next ms.
+
+**If `wait`:** spins until next millisecond.
+
+**Never** reuses a `(time, node, seq)` tuple. That's the invariant.
+
+### WASM load failure
+
+```json
+{
+  "level": "error",
+  "event": "WasmLoadFailed",
+  "message": "WebAssembly.instantiate failed — check runtime policy or CSP headers",
+  "fallback": "JS fallback available for uuidv4, nanoid strategies; snowflake requires WASM"
+}
+```
+
+Full failure mode table: [PRD.md §7.1](PRD.md#71-failure-modes-and-operator-actions-normative).
 
 ---
 
 ## 11. Size budget (frontend teams)
 
-- Import **`better-uuid/core`** when bundle size is sacred.  
-- Full package + WASM + extra strategies = measure and publish gzip numbers (PRD §5.6).
+- Import **`better-uuid/core`** when bundle size is sacred.
+- Full package + WASM + extra strategies = measure and publish gzip numbers (PRD §5.8).
 
 ---
 

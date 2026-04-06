@@ -286,7 +286,7 @@ Implementation: thin wrapper calling same WASM/JS stack as library; `migrate` ma
 ### 8.1 Canonical vs display
 
 - **Canonical:** what `createId` emits and `...equals` uses.  
-- **Display:** Crockford base32 for humans; mapping table in `docs/formats.md` (future).  
+- **Display:** Crockford base32 for humans; mapping table in `docs/formats.md`.  
 - Compression produces **non-canonical** aliases only if documented as reversible **with schema + optional secret** (if applicable).
 
 ### 8.2 Human-safe alphabet

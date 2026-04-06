@@ -1,0 +1,23 @@
+[package]
+name = "better_uuid_core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Core ID generation, encoding, and parsing logic for better-uuid"
+
+[dependencies]
+getrandom = { workspace = true }
+thiserror = { workspace = true }
+serde = { workspace = true, optional = true }
+uuid = { workspace = true }
+rand = { workspace = true }
+blake3 = { workspace = true }
+base32 = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+
+[features]
+default = []
+serde = ["dep:serde"]

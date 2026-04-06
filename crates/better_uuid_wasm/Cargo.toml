@@ -1,0 +1,21 @@
+[package]
+name = "better_uuid_wasm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "WASM bindings for better-uuid"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+better_uuid_core = { workspace = true }
+wasm-bindgen = { workspace = true }
+serde = { workspace = true }
+serde-wasm-bindgen = "0.6"
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"

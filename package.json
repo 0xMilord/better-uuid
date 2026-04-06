@@ -1,0 +1,24 @@
+{
+  "name": "better-uuid-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Structured, inspectable identifiers — not opaque random strings",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "rust:fmt": "cargo fmt --check",
+    "rust:clippy": "cargo clippy --all-targets --all-features -- -D warnings",
+    "rust:test": "cargo test --all-features",
+    "wasm:build": "wasm-pack build crates/better_uuid_wasm --target bundler --dev",
+    "wasm:build:release": "wasm-pack build crates/better_uuid_wasm --target bundler --release",
+    "ci:all": "pnpm rust:fmt && pnpm rust:clippy && pnpm rust:test && pnpm typecheck"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.6.4"
+}
