@@ -160,7 +160,7 @@ mod tests {
     use super::*;
     use crate::SCHEMA_VERSION;
     use crate::strategies::{RandomV4, TimeOrdered};
-    use crate::strategy::OsRandom;
+    use crate::strategy::{IdStrategy, OsRandom};
 
     #[test]
     fn format_and_parse_uuid_v4_no_prefix() {
@@ -247,6 +247,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::cast_possible_truncation)]
     fn roundtrip_time_ordered_generated() {
         use std::time::{SystemTime, UNIX_EPOCH};
         let now_ms = SystemTime::now()

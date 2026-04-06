@@ -104,7 +104,7 @@ impl IdStrategy for TimeOrdered {
             initial
         } else {
             let current = self.last_counter.fetch_add(1, Ordering::AcqRel);
-            if current & 0xFFF == 0 && current > 0xFFF {
+            if current.trailing_zeros() >= 12 {
                 return Err(GenerateError::SequenceExhausted {
                     node: ctx.node.as_ref().map_or(0, |n| n.node_id),
                     timestamp: now_ms,
@@ -127,7 +127,13 @@ impl IdStrategy for TimeOrdered {
         uuid[6] = 0x70 | ((counter >> 8) & 0x0F) as u8;
         uuid[7] = (counter & 0xFF) as u8;
         uuid[8] = 0x80 | (rand_bytes[0] & 0x3F);
-        uuid[9..17].copy_from_slice(&rand_bytes[1..]);
+        uuid[9] = rand_bytes[1];
+        uuid[10] = rand_bytes[2];
+        uuid[11] = rand_bytes[3];
+        uuid[12] = rand_bytes[4];
+        uuid[13] = rand_bytes[5];
+        uuid[14] = rand_bytes[6];
+        uuid[15] = rand_bytes[7];
 
         Ok(IdPayload {
             schema_version: crate::SCHEMA_VERSION,
@@ -242,6 +248,7 @@ mod tests {
     use crate::strategy::OsRandom;
     use std::time::{SystemTime, UNIX_EPOCH};
 
+    #[allow(clippy::cast_possible_truncation)]
     fn get_now_ms() -> u64 {
         SystemTime::now()
             .duration_since(UNIX_EPOCH)
