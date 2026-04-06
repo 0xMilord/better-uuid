@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createId, parseId, isLegacyId, configure, _resetConfig, _getConfig, withIdContext } from "../index";
+import { createId, parseId, isLegacyId, configure, _resetConfig, _getConfig, withIdContext } from "./index";
 
 describe("createId", () => {
   beforeEach(() => {
