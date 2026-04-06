@@ -8,7 +8,7 @@ import type {
   ParsedId,
   StrategyName,
 } from "./types";
-import { GenerateError, ParseError } from "./errors";
+import { GenerateError } from "./errors";
 
 export {
   BetterUuidError,
@@ -88,7 +88,7 @@ export function createId(_options?: CreateIdOptions): string | string[] {
   }
 
   // Prefix validation (charset + length + reserved)
-  if (prefix) {
+  if (prefix !== undefined) {
     if (!/^[a-z0-9]{1,12}$/.test(prefix)) {
       throw new GenerateError(
         `Invalid prefix: "${prefix}" — must be [a-z0-9]{1,12}, not reserved`,

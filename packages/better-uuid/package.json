@@ -75,7 +75,8 @@
     "wasm"
   ],
   "scripts": {
-    "build": "pnpm build:ts",
+    "build": "pnpm build:wasm && pnpm build:ts",
+    "build:wasm": "wasm-pack build ../../crates/better_uuid_wasm --target bundler --dev --out-dir ../better-uuid/wasm",
     "build:ts": "tsc --build tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --reporter=verbose",

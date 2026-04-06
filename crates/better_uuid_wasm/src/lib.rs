@@ -3,14 +3,14 @@
 //! Exposes generation, parsing, and validation to JavaScript via wasm-bindgen.
 //! Uses serde_json for JSON in/out — DX-first approach.
 
+use better_uuid_core::SCHEMA_VERSION;
 use better_uuid_core::layout::format_native_id;
 use better_uuid_core::parse::parse_id;
+use better_uuid_core::strategies::{RandomV4, TimeOrdered};
 use better_uuid_core::strategy::{
     ClockRegressionPolicy, GenContext, IdStrategy, OsRandom, SequenceExhaustedPolicy,
 };
-use better_uuid_core::strategies::{RandomV4, TimeOrdered};
 use better_uuid_core::validate_prefix;
-use better_uuid_core::SCHEMA_VERSION;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -30,7 +30,7 @@ struct GenerateOptions {
     count: Option<usize>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct GenerateResult {
     id: String,
     strategy: String,
@@ -88,10 +88,12 @@ fn generate_one(opts: &GenerateOptions) -> Result<GenerateResult, String> {
         prefix: prefix_str,
         now_ms,
         random: &mut random,
-        node: opts.node.map(|n| better_uuid_core::strategy::NodeDescriptor {
-            node_id: n,
-            region: opts.region.clone().unwrap_or_default(),
-        }),
+        node: opts
+            .node
+            .map(|n| better_uuid_core::strategy::NodeDescriptor {
+                node_id: n,
+                region: opts.region.clone().unwrap_or_default(),
+            }),
         deterministic_input: None,
         salt: None,
         on_clock_regression: parse_clock_policy(&opts.on_clock_regression),
@@ -187,7 +189,7 @@ pub fn generate_id(options_json: &str) -> Result<String, String> {
 // Parsing
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct ParseResult {
     legacy: bool,
     prefix: Option<String>,
@@ -234,7 +236,7 @@ pub fn validate_prefix_js(prefix: &str) -> bool {
 /// Check if an ID string is a legacy RFC UUID.
 #[wasm_bindgen]
 pub fn is_legacy_id_js(input: &str) -> bool {
-    parse_id(input).map_or(false, |p| p.legacy)
+    parse_id(input).is_ok_and(|p| p.legacy)
 }
 
 /// Get the current schema version.
@@ -249,8 +251,8 @@ pub fn schema_version() -> u8 {
 
 #[cfg(test)]
 mod wasm_tests {
-    use wasm_bindgen_test::*;
     use super::*;
+    use wasm_bindgen_test::*;
 
     #[wasm_bindgen_test]
     fn generate_uuid_v4() {
@@ -335,8 +337,8 @@ mod wasm_tests {
     }
 
     #[wasm_bindgen_test]
-    fn schema_version() {
-        assert_eq!(schema_version(), 1);
+    fn test_schema_version() {
+        assert_eq!(super::schema_version(), 1u8);
     }
 
     #[wasm_bindgen_test]
