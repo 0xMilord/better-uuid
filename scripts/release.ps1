@@ -1,5 +1,8 @@
-﻿# ---------------------------------------------------------------------------
-# better-uuid — Release script (PowerShell)
+# ---------------------------------------------------------------------------
+# better-uuid — Release script (PowerShell) — OPTIONAL
+#
+# Default release path is Node: `node scripts/release.mjs` (see package.json).
+# Use this file only if you prefer PowerShell Core (`pwsh`) on Windows.
 #
 # Usage:
 #   pnpm release:dry-run    # Gates + plan, no writes

@@ -2,11 +2,14 @@
 
 ## One-command release
 
+Implementation: **`scripts/release.mjs`** (Node — works on Windows without PowerShell Core).
+
 From the **repository root** (pnpm workspace):
 
 ```bash
 # Dry run (recommended first)
 pnpm release:dry-run     # Runs gates, prints plan, no git/npm writes
+# npm works too: npm run release:dry-run
 
 # Full release (interactive)
 pnpm release             # Interactive bump (patch/minor/major) + summary, then full pipeline
@@ -30,17 +33,32 @@ If any step fails, the script stops.
 
 ### Non-interactive (CI or scripts)
 
-```bash
-# PowerShell (Windows)
-$env:RELEASE_BUMP = "patch"
-$env:RELEASE_SUMMARY = "Fix thing X"
-pnpm release
+**Windows: PowerShell is not CMD.** Do not use `set KEY=value` in PowerShell—that either errors or does the wrong thing. Use `$env:KEY = "value"` and **quote strings that contain spaces.**
 
-# Unix
-export RELEASE_BUMP=patch
-export RELEASE_SUMMARY="Fix thing X"
-pnpm release:unix
+```powershell
+# Windows PowerShell
+$env:RELEASE_BUMP = "patch"
+$env:RELEASE_SUMMARY = "Fix the thing"
+pnpm release
+# or one line:
+$env:RELEASE_BUMP = "patch"; $env:RELEASE_SUMMARY = "Fix the thing"; pnpm release
 ```
+
+```bat
+REM Windows CMD (Command Prompt only)
+set RELEASE_BUMP=patch
+set "RELEASE_SUMMARY=Fix the thing"
+pnpm release
+```
+
+```bash
+# Unix / Git Bash
+export RELEASE_BUMP=patch
+export RELEASE_SUMMARY="Fix the thing"
+pnpm release
+```
+
+(Alternative: `pnpm release:unix` runs `scripts/release.sh` if you prefer bash.)
 
 ### Clean tree policy
 
@@ -52,7 +70,11 @@ pnpm release:unix
 - `.qwen/` (local agent/IDE settings)
 - `docs/` (documentation site)
 
-For a fully clean tree only, set `RELEASE_STRICT_CLEAN=1`.
+**Not** ignored: the repo **root** `package.json`, `pnpm-lock.yaml`, Rust/TS sources, etc. Commit or stash those before releasing (the script bumps `packages/better-uuid/package.json` only).
+
+**Troubleshoot:** If you see `Uncommitted changes: M package.json`, that is almost always the **root** `package.json`—stage/commit it, or stash, then run release again.
+
+For a fully clean tree only: **PowerShell** `$env:RELEASE_STRICT_CLEAN = "1"` · **CMD** `set RELEASE_STRICT_CLEAN=1` · **Unix** `export RELEASE_STRICT_CLEAN=1`
 
 ### Rollback
 
