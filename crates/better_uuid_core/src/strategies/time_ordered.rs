@@ -98,7 +98,8 @@ impl IdStrategy for TimeOrdered {
             // New millisecond — reset counter to random initial value
             let mut rand_bytes = [0u8; 2];
             ctx.random.fill_bytes(&mut rand_bytes);
-            let initial = (u64::from(rand_bytes[0]) << 4 | u64::from(rand_bytes[1]) >> 4) & 0xFFF;
+            // Use lower 11 bits (0-2047) to leave headroom for burst generation
+            let initial = (u64::from(rand_bytes[0]) << 3 | u64::from(rand_bytes[1]) >> 5) & 0x7FF;
             self.last_ts.store(now_ms, Ordering::Release);
             self.last_counter.store(initial, Ordering::Release);
             initial
@@ -186,7 +187,7 @@ pub fn parse_uuid_v7_timestamp(s: &str) -> Option<u64> {
         return None;
     }
     let mut hex_str = String::with_capacity(12);
-    for i in [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 12, 13] {
+    for i in [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12] {
         hex_str.push(b[i] as char);
     }
     u64::from_str_radix(&hex_str, 16).ok()
