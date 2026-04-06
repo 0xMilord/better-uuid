@@ -27,10 +27,9 @@ pnpm release             # Interactive bump (patch/minor/major) + summary, then 
 6. Writes `packages/better-uuid/package.json` version and prepends `CHANGELOG.md`
 7. `git commit` + `git tag vX.Y.Z`
 8. **`pnpm --filter better-uuid build`** — `dist/` and `wasm/` are gitignored; without this step the npm tarball would only contain `package.json` + `LICENSE`.
-9. `pnpm --filter better-uuid publish --access public`
+9. `pnpm --filter better-uuid publish --access public --no-git-checks` (build outputs are gitignored; without this flag, pnpm errors with `ERR_PNPM_GIT_UNCLEAN` after the release commit)
 10. `git push origin main` + `git push origin vX.Y.Z`
-11. Smoke test: temp directory **`npm install`** (uses shell on Windows) and verifies `createId` is a function
-11. If branch `develop` exists, switches to it
+11. Smoke test: temp directory **`npm install`** (shell on Windows) and verifies `createId` is a function
 
 If any step fails, the script stops.
 

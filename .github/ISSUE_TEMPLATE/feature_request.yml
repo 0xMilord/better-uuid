@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Every feature must map to a PRD requirement and a ROADMAP phase.
+        Every feature should map to a PRD requirement and a ROADMAP phase.
         If no PRD row exists, explain why this is new scope.
 
   - type: dropdown

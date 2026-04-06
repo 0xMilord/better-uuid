@@ -188,7 +188,7 @@ async function main() {
 		log("5. Bump version + CHANGELOG");
 		log("6. git commit + tag");
 		log("7. pnpm --filter better-uuid build (dist/ + wasm/; not in git)");
-		log("8. pnpm publish");
+		log("8. pnpm publish --no-git-checks (ignore gitignored build artifacts)");
 		log("9. Smoke test");
 		log("");
 		log("═══ Dry run complete ═══");
@@ -279,7 +279,8 @@ async function main() {
 	runPnpm(["--filter", pkgName, "build"]);
 
 	log(`Publishing ${pkgName}@${newVersion}`);
-	runPnpm(["--filter", pkgName, "publish", "--access", "public"]);
+	// build/ leaves gitignored artifacts; release commit is already done — pnpm would block with ERR_PNPM_GIT_UNCLEAN otherwise
+	runPnpm(["--filter", pkgName, "publish", "--access", "public", "--no-git-checks"]);
 
 	log("Pushing to origin");
 	run("git", ["push", "origin", "main"]);

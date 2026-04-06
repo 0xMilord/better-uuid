@@ -276,6 +276,11 @@ pnpm test
 | [RELEASING.md](RELEASING.md) | Release cycle: `pnpm release`, GitHub Actions, rollback |
 | [docs/formats.md](docs/formats.md) | Wire format spec, alphabet reference |
 | [docs/collision-model.md](docs/collision-model.md) | Entropy analysis, birthday bounds, CSPRNG audit |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How to propose changes and run CI locally |
+| [SECURITY.md](SECURITY.md) | Vulnerability reporting (private) |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards |
+| [SUPPORT.md](SUPPORT.md) | Where to ask questions |
+| [GOVERNANCE.md](GOVERNANCE.md) | Maintainer roles and decisions |
 
 ---
 
@@ -287,7 +292,7 @@ Performance targets and methodology will be published here once Phase 2 is compl
 
 ## License
 
-TBD by maintainers.
+[MIT](LICENSE).
 
 ---
 

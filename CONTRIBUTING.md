@@ -35,7 +35,7 @@ If `pnpm ci:all` passes, your environment is correct.
 
 ### Bug reports
 
-Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md). Include:
+Use the [bug report form](https://github.com/better-uuid/better-uuid/issues/new?template=bug_report.yml). Include:
 - Runtime (Node version, browser, Edge)
 - better-uuid version (or commit SHA)
 - Minimal reproduction
@@ -43,7 +43,7 @@ Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md). Include:
 
 ### Feature requests
 
-Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md). Every feature must map to:
+Use the [feature request form](https://github.com/better-uuid/better-uuid/issues/new?template=feature_request.yml). Every feature must map to:
 - A PRD requirement ID (e.g. R3, A1)
 - A ROADMAP phase
 - An ARCHITECTURE section it affects
@@ -100,11 +100,7 @@ Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md). E
 
 ## 6. Release process
 
-1. Bump version in `Cargo.toml` + `packages/better-uuid/package.json`.
-2. Run `pnpm ci:all`.
-3. Update `CHANGELOG.md` (auto-generated from conventional commits).
-4. Tag: `git tag v0.1.0 && git push --tags`.
-5. Publish: `pnpm publish --filter better-uuid`.
+Maintainers use **`scripts/release.mjs`** (`pnpm release`). See **[RELEASING.md](RELEASING.md)** for the full checklist, including **`pnpm --filter better-uuid build`** before publish and **`--no-git-checks`** (local `dist/` / `wasm/` are gitignored).
 
 **Breaking wire-format changes = major version.** We never silently change decode behavior for existing schema versions.
 
@@ -112,9 +108,10 @@ Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md). E
 
 ## 7. Governance
 
-- Maintainers listed in repo root (TBD).
-- RFCs for API-breaking changes go through a **minimum 7-day comment period** before merge.
-- Security issues: email [TBD] — do not open a public issue.
+See **[GOVERNANCE.md](GOVERNANCE.md)** and **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)**.
+
+- RFCs for API-breaking changes: aim for **at least a few days** of issue discussion before merge when practical.
+- **Security:** see **[SECURITY.md](SECURITY.md)** — do not open a public issue for vulnerabilities.
 
 ---
 
