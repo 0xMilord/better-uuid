@@ -3,7 +3,7 @@
 //! Thin `wasm-bindgen` layer over `better_uuid_core`. Exposes generation
 //! and parsing as JS-friendly functions with `JsValue` serialization.
 
-use better_uuid_core::{parse_id, validate_prefix, ParsedId, StrategyId};
+use better_uuid_core::{StrategyId, parse_id, validate_prefix};
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
@@ -83,8 +83,8 @@ pub fn schema_version() -> u8 {
 
 #[cfg(test)]
 mod wasm_tests {
-    use wasm_bindgen_test::*;
     use super::*;
+    use wasm_bindgen_test::*;
 
     #[wasm_bindgen_test]
     fn parse_legacy_uuid_v4() {

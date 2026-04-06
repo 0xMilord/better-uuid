@@ -3,8 +3,8 @@
 //! Dispatches on prefix + format to produce a [`ParsedId`] with typed fields.
 //! Recognises both native better-uuid payloads and legacy RFC UUID strings.
 
-use crate::error::ParseError;
 use crate::StrategyId;
+use crate::error::ParseError;
 
 // ---------------------------------------------------------------------------
 // Parsed result
@@ -67,7 +67,9 @@ fn uuid_version(s: &str) -> Option<u8> {
     if s.len() < 15 {
         return None;
     }
-    s.as_bytes()[14].to_ascii_uppercase().to_digit(16).map(|v| v as u8)
+    let byte = s.as_bytes()[14];
+    #[allow(clippy::cast_possible_truncation)]
+    (byte as char).to_digit(16).map(|v| v as u8)
 }
 
 // ---------------------------------------------------------------------------
@@ -81,6 +83,11 @@ fn uuid_version(s: &str) -> Option<u8> {
 /// 1. **Legacy RFC UUID** — `8-4-4-4-12` hex form → `legacy: true`.
 /// 2. **Native better-uuid** — `<prefix>_<payload>` form → decoded payload.
 /// 3. **Reject** with [`ParseError::InvalidFormat`] if neither matches.
+///
+/// # Errors
+///
+/// Returns [`ParseError::InvalidFormat`] if the input does not match any
+/// recognised ID format (native or legacy).
 pub fn parse_id(s: &str) -> Result<ParsedId, ParseError> {
     // Branch 1: legacy UUID
     if is_legacy_uuid_format(s) {
@@ -90,9 +97,11 @@ pub fn parse_id(s: &str) -> Result<ParsedId, ParseError> {
             7 => StrategyId::TimeOrdered,
             other => StrategyId::Unknown(other),
         };
-        let bytes = crate::encode::decode_hex(&s.replace('-', "")).ok_or_else(|| ParseError::InvalidFormat {
-            position: 0,
-            snippet: ParseError::safe_snippet(s, 0),
+        let bytes = crate::encode::decode_hex(&s.replace('-', "")).ok_or_else(|| {
+            ParseError::InvalidFormat {
+                position: 0,
+                snippet: ParseError::safe_snippet(s, 0),
+            }
         })?;
 
         return Ok(ParsedId {

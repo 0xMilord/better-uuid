@@ -30,9 +30,8 @@ impl From<u8> for ClockRegressionPolicy {
     fn from(v: u8) -> Self {
         match v {
             0 => Self::Wait,
-            1 => Self::Error,
             2 => Self::Fallback,
-            _ => Self::Error, // default to safe: fail closed
+            _ => Self::Error, // 1 = Error, 3+ = unknown → default: fail closed
         }
     }
 }
@@ -51,8 +50,7 @@ impl From<u8> for SequenceExhaustedPolicy {
     fn from(v: u8) -> Self {
         match v {
             0 => Self::Wait,
-            1 => Self::Error,
-            _ => Self::Error,
+            _ => Self::Error, // 1 = Error, 2+ = unknown → fail closed
         }
     }
 }
@@ -150,5 +148,10 @@ pub trait IdStrategy {
     const STRATEGY_ID: u8;
 
     /// Generate a new ID payload from the given context.
-    fn generate(&self, ctx: &mut GenContext) -> Result<IdPayload, GenerateError>;
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GenerateError`] when generation fails due to clock regression,
+    /// sequence exhaustion, invalid prefix, or entropy source failure.
+    fn generate(&self, ctx: &mut GenContext<'_>) -> Result<IdPayload, GenerateError>;
 }

@@ -2,7 +2,8 @@
 //!
 //! Supports Crockford base32 (default), base58, and hex (UUID-shaped strategies).
 
-use base32::{Alphabet, encode as b32_encode, decode as b32_decode};
+use base32::{Alphabet, decode as b32_decode, encode as b32_encode};
+use std::fmt::Write;
 
 /// Crockford base32 alphabet (case-insensitive).
 ///
@@ -18,7 +19,9 @@ pub const BASE58_CHARS: &str = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnop
 #[must_use]
 pub fn encode_crockford(bytes: &[u8]) -> String {
     // base32 crate pads output; we strip padding for our wire format.
-    b32_encode(CROCKFORD, bytes).trim_end_matches('=').to_string()
+    b32_encode(CROCKFORD, bytes)
+        .trim_end_matches('=')
+        .to_string()
 }
 
 /// Decode a Crockford base32 string back to bytes.
@@ -36,7 +39,11 @@ pub fn decode_crockford(s: &str) -> Option<Vec<u8>> {
 /// Used for UUID-shaped strategies and debug output.
 #[must_use]
 pub fn encode_hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{b:02x}")).collect()
+    let mut result = String::with_capacity(bytes.len() * 2);
+    for b in bytes {
+        let _ = write!(result, "{b:02x}");
+    }
+    result
 }
 
 /// Decode a hex string back to bytes.

@@ -24,14 +24,14 @@
 // Public surface
 // ---------------------------------------------------------------------------
 
+pub mod encode;
 pub mod error;
 pub mod parse;
 pub mod strategy;
-pub mod encode;
 
 // Re-export top-level types for ergonomic imports
 pub use error::{BetterUuidError, GenerateError, ParseError};
-pub use parse::ParsedId;
+pub use parse::{ParsedId, parse_id};
 pub use strategy::{ClockRegressionPolicy, GenContext, IdStrategy, SequenceExhaustedPolicy};
 
 // ---------------------------------------------------------------------------
@@ -108,6 +108,11 @@ pub const RESERVED_PREFIXES: &[&str] = &["btr", "sys", "_", ""];
 /// - Charset: `[a-z0-9]` (lowercase alphanumeric only).
 /// - Length: 1..=`MAX_PREFIX_LENGTH`.
 /// - Must not be in [`RESERVED_PREFIXES`].
+///
+/// # Errors
+///
+/// Returns [`ParseError::InvalidPrefix`] if the prefix is empty, reserved,
+/// exceeds the maximum length, or contains invalid characters.
 pub fn validate_prefix(prefix: &str) -> Result<(), ParseError> {
     if prefix.is_empty() || RESERVED_PREFIXES.contains(&prefix) {
         return Err(ParseError::InvalidPrefix {
@@ -121,7 +126,10 @@ pub fn validate_prefix(prefix: &str) -> Result<(), ParseError> {
             reason: format!("exceeds maximum length of {MAX_PREFIX_LENGTH}"),
         });
     }
-    if !prefix.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit()) {
+    if !prefix
+        .chars()
+        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit())
+    {
         return Err(ParseError::InvalidPrefix {
             prefix: prefix.to_string(),
             reason: "contains characters outside [a-z0-9]".to_string(),
@@ -156,7 +164,7 @@ mod tests {
     #[test]
     fn validate_prefix_rejects_invalid_charset() {
         assert!(validate_prefix("User-ID").is_err()); // hyphen
-        assert!(validate_prefix("UserID").is_err());  // uppercase
+        assert!(validate_prefix("UserID").is_err()); // uppercase
         assert!(validate_prefix("user_id").is_err()); // underscore
     }
 

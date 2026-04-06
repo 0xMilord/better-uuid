@@ -127,7 +127,13 @@ impl ParseError {
         let safe: String = input
             .chars()
             .take(20)
-            .map(|c| if c.is_ascii_graphic() || c == ' ' { c } else { '?' })
+            .map(|c| {
+                if c.is_ascii_graphic() || c == ' ' {
+                    c
+                } else {
+                    '?'
+                }
+            })
             .collect();
         format!("{safe} (pos {position})")
     }

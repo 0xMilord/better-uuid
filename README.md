@@ -4,7 +4,7 @@
 
 **TypeScript-first, Rust-powered identifiers** compiled to WebAssembly. Treat IDs as **structured, inspectable values** — not opaque random strings.
 
-**Status:** 🚧 Planning phase — not yet published to npm. Track progress in [ROADMAP.md](ROADMAP.md).
+**Status:** 🏗️ Phase 0 complete — monorepo scaffolded, Rust core + WASM crates + TS package structured, CI configured. Phase 1 (Rust strategies + golden fixtures) in progress.
 
 ---
 
@@ -254,6 +254,25 @@ parseId("550e8400-e29b-41d4-a716-446655440000");
 | Drop-in compat with `uuid`/`nanoid` | N/A | ✅ |
 
 We're not replacing the RFC — we're **standardizing how apps wrap and explain IDs** in logs, DBs, and traces.
+
+---
+
+## Local development
+
+```bash
+# Prerequisites: Rust stable (rustup), Node 22+, pnpm 10+
+pnpm install
+
+# Run everything: Rust fmt + clippy + test, TS typecheck + test
+pnpm ci:all
+
+# Or run individually:
+cargo fmt --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-features
+pnpm typecheck
+pnpm test
+```
 
 ---
 
