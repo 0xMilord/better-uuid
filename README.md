@@ -268,11 +268,14 @@ pnpm test
 
 | Doc | Purpose |
 |-----|--------|
-| [ADOPTION.md](ADOPTION.md) | **Start here for migration:** hybrid IDs, uuid/nanoid drop-in, DB fear removal, copy-paste snippets |
-| [PRD.md](PRD.md) | Requirements, guarantees, failure modes, competitive analysis |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Rust core, WASM, TS exports, wire format |
+| [📖 Docs site](https://better-uuid.github.io/better-uuid/) | **Start here:** static HTML docs with full API reference |
+| [ADOPTION.md](ADOPTION.md) | Migration guide: hybrid IDs, uuid/nanoid drop-in, DB fear removal |
+| [PRD.md](PRD.md) | Requirements, guarantees, UUID v7 comparison, failure modes |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Rust core, WASM, TS exports, compat layout |
 | [ROADMAP.md](ROADMAP.md) | Phases, exit criteria, what ships when |
-| [docs/formats.md](docs/formats.md) | Wire format spec, alphabet reference, schema versioning |
+| [RELEASING.md](RELEASING.md) | Release cycle: `pnpm release`, GitHub Actions, rollback |
+| [docs/formats.md](docs/formats.md) | Wire format spec, alphabet reference |
+| [docs/collision-model.md](docs/collision-model.md) | Entropy analysis, birthday bounds, CSPRNG audit |
 
 ---
 

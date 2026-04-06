@@ -13,6 +13,9 @@ wasm/
 *.cjs
 *.cjs.map
 
+# Docs output
+docs/_site/
+
 # Rust
 target/
 **/*.rs.bk
@@ -44,6 +47,9 @@ coverage/
 
 # WASM pack
 pkg/
+
+# Fixtures (large, committed for contract testing)
+# fixtures/ — keep committed
 
 # Lockfiles (keep but document)
 # pnpm-lock.yaml — committed, frozen in CI

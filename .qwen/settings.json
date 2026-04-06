@@ -7,7 +7,8 @@
       "Bash(@echo *)",
       "Bash(npx *)",
       "Bash(findstr *)",
-      "Bash(type *)"
+      "Bash(type *)",
+      "Bash(npm install)"
     ]
   },
   "$version": 3

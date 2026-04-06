@@ -195,14 +195,40 @@ This roadmap is **sequenced for shipping value early** while keeping the Rust/WA
 
 ## Near-term priority stack (TL;DR)
 
-1. **`ADOPTION.md` + hybrid parse** (fear + clarity).
-2. **Core + vectors** (correctness).
-3. **WASM + npm + benchmarks** (trust).
-4. **Compat subpaths + `configure` / `safe` mode** (Layer 1 onboarding).
-5. **Strategies + failure policies** (snowflake clock/seq).
-6. **CLI demo + migrate + bulk gen** (growth).
-7. **Compression + schema + trace + safe alphabet** (differentiation; PRD A1–A5).
-8. **DB kit + Prisma + ID length table** (lock-in).
+1. **Phase 2: WASM bindings + real TS `createId`/`parseId`** (trust)
+2. **CLI `generate`/`parse` with real output** (growth)
+3. **Compat subpaths + `configure` / `safe` mode** (Layer 1 onboarding)
+4. **Strategies: nanoid, ULID, deterministic, snowflake** (PRD R2–R6)
+5. **Failure policies** (snowflake clock/seq)
+6. **Migration CLI** (growth)
+7. **Compression + schema + trace** (differentiation; PRD A1–A5)
+8. **DB kit + Prisma** (lock-in)
+
+### What's left to implement
+
+| Requirement | Status | Phase |
+|-------------|--------|-------|
+| R1 `createId()` wired to real engine | 🚧 Placeholder in TS | Phase 2 |
+| R7 `parseId()` wired to real engine | 🚧 Placeholder in TS | Phase 2 |
+| R11 Legacy UUID recognition | ✅ Rust done, TS needs wiring | Phase 2 |
+| R12 `isLegacyId()` | ✅ Implemented (placeholder detection) | Phase 2 |
+| R13 Compat subpaths | ✅ API surface defined | Phase 2 |
+| R14 `safe` mode | 🚧 TS validation needed | Phase 2 |
+| R15 `configure()` | ✅ Implemented | Phase 2 |
+| R16 `withIdContext()` | 🚧 Pass-through until Phase 2 | Phase 5 |
+| R17 CLI killer demo | 🚧 Skeleton exists | Phase 5 |
+| R18 Bulk generation | 🚧 API defined | Phase 5 |
+| R2 nanoid/ULID/deterministic/snowflake | 🚧 Not implemented | Phase 3 |
+| R3 Time-ordered (lex sort) | ✅ Rust core done | Phase 1 |
+| R4 Prefix system | ✅ Implemented | Phase 0 |
+| R5 Deterministic IDs | 🚧 Not implemented | Phase 3 |
+| R6 Distributed/snowflake | 🚧 Not implemented | Phase 3 |
+| A0 Migration CLI | 🚧 Stub exists | Phase 5 |
+| A1 compressId/expandId | 🚧 Not implemented | Phase 6 |
+| A2 Safe alphabet | 🚧 Not implemented | Phase 6 |
+| A3 Trace/OTEL | 🚧 Not implemented | Phase 6 |
+| A4 defineId schema | 🚧 Not implemented | Phase 6 |
+| A5 Monkey patch | ✅ API defined | Phase 6 |
 
 ---
 
