@@ -18,7 +18,6 @@ use crate::error::GenerateError;
 #[repr(u8)]
 pub enum ClockRegressionPolicy {
     /// Block generation until `now >= last_timestamp`.
-    /// Has a configurable timeout cap to prevent indefinite blocking.
     Wait = 0,
     /// Fail immediately with [`GenerateError::ClockRegressed`].
     Error = 1,
@@ -31,7 +30,7 @@ impl From<u8> for ClockRegressionPolicy {
         match v {
             0 => Self::Wait,
             2 => Self::Fallback,
-            _ => Self::Error, // 1 = Error, 3+ = unknown → default: fail closed
+            _ => Self::Error,
         }
     }
 }
@@ -50,7 +49,7 @@ impl From<u8> for SequenceExhaustedPolicy {
     fn from(v: u8) -> Self {
         match v {
             0 => Self::Wait,
-            _ => Self::Error, // 1 = Error, 2+ = unknown → fail closed
+            _ => Self::Error,
         }
     }
 }
@@ -120,7 +119,7 @@ pub struct GenContext<'a> {
 /// The raw output of an ID strategy before encoding.
 ///
 /// This struct is the canonical in-memory representation. It is encoded to a
-/// string by the `encode` module and decoded back by the `parse` module.
+/// string by the `layout` module and decoded back by the `parse` module.
 #[derive(Debug, Clone)]
 pub struct IdPayload {
     /// Wire-format schema version (see `SCHEMA_VERSION`).

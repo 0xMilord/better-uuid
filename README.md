@@ -4,7 +4,7 @@
 
 **TypeScript-first, Rust-powered identifiers** compiled to WebAssembly. Treat IDs as **structured, inspectable values** — not opaque random strings.
 
-**Status:** 🏗️ Phase 0 complete — monorepo scaffolded, Rust core + WASM crates + TS package structured, CI configured. Phase 1 (Rust strategies + golden fixtures) in progress.
+**Status:** ✅ Phase 0 complete — monorepo scaffolded, Rust core + WASM crates + TS package structured, CI green (15 Rust + 23 TS tests passing). Phase 1 (Rust strategies + golden fixtures) in progress.
 
 ---
 

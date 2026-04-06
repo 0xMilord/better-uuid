@@ -26,13 +26,20 @@
 
 pub mod encode;
 pub mod error;
+pub mod layout;
 pub mod parse;
+pub mod strategies;
 pub mod strategy;
 
 // Re-export top-level types for ergonomic imports
 pub use error::{BetterUuidError, GenerateError, ParseError};
+pub use layout::{NativeIdComponents, format_native_id, parse_native_id};
 pub use parse::{ParsedId, parse_id};
-pub use strategy::{ClockRegressionPolicy, GenContext, IdStrategy, SequenceExhaustedPolicy};
+pub use strategies::{RandomV4, TimeOrdered};
+pub use strategy::{
+    ClockRegressionPolicy, GenContext, IdPayload, IdStrategy, NodeDescriptor, OsRandom,
+    RandomSource, SequenceExhaustedPolicy,
+};
 
 // ---------------------------------------------------------------------------
 // Schema version — frozen until a breaking wire-format change
@@ -163,9 +170,9 @@ mod tests {
 
     #[test]
     fn validate_prefix_rejects_invalid_charset() {
-        assert!(validate_prefix("User-ID").is_err()); // hyphen
-        assert!(validate_prefix("UserID").is_err()); // uppercase
-        assert!(validate_prefix("user_id").is_err()); // underscore
+        assert!(validate_prefix("User-ID").is_err());
+        assert!(validate_prefix("UserID").is_err());
+        assert!(validate_prefix("user_id").is_err());
     }
 
     #[test]

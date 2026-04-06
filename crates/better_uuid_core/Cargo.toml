@@ -9,15 +9,19 @@ description = "Core ID generation, encoding, and parsing logic for better-uuid"
 [dependencies]
 getrandom = { workspace = true }
 thiserror = { workspace = true }
-serde = { workspace = true, optional = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
 uuid = { workspace = true }
 rand = { workspace = true }
 blake3 = { workspace = true }
 base32 = { workspace = true }
 
+[[bin]]
+name = "generate_fixtures"
+path = "src/bin/generate_fixtures.rs"
+
 [dev-dependencies]
-serde_json = { workspace = true }
+proptest = "1"
 
 [features]
 default = []
-serde = ["dep:serde"]
