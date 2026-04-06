@@ -29,7 +29,7 @@ pnpm release             # Interactive bump (patch/minor/major) + summary, then 
 8. **`pnpm --filter better-uuid build`** — `dist/` and `wasm/` are gitignored; without this step the npm tarball would only contain `package.json` + `LICENSE`.
 9. `pnpm --filter better-uuid publish --access public --no-git-checks` (build outputs are gitignored; without this flag, pnpm errors with `ERR_PNPM_GIT_UNCLEAN` after the release commit)
 10. `git push origin main` + `git push origin vX.Y.Z`
-11. Smoke test: temp directory **`npm install`** (shell on Windows) and verifies `createId` is a function
+11. Smoke test: **`npm view pkg@version`** polling (up to ~3 min) until the registry lists the new release, then **`npm install --prefer-online`** with retries — replication lag after publish often caused `ETARGET` on a single 10s delay
 
 If any step fails, the script stops.
 

@@ -71,6 +71,25 @@ function spawnNpm(args, opts = {}) {
 	});
 }
 
+/**
+ * After `npm publish`, the tarball can take minutes to replicate (ETARGET / No matching version).
+ * Poll `npm view` until the version is visible, then install with `--prefer-online`.
+ */
+async function waitForNpmVersion(name, version, { maxAttempts = 36, delayMs = 5000 } = {}) {
+	for (let i = 0; i < maxAttempts; i++) {
+		const r = spawnNpm(["view", `${name}@${version}`, "version"], { cwd: rootDir });
+		const line = (r.stdout ?? "").trim().split(/\r?\n/)[0] ?? "";
+		if (r.status === 0 && line === version) {
+			return true;
+		}
+		log(
+			`Smoke: registry not listing ${name}@${version} yet (${i + 1}/${maxAttempts}), waiting ${delayMs / 1000}s…`,
+		);
+		await new Promise((resolve) => setTimeout(resolve, delayMs));
+	}
+	return false;
+}
+
 function runCapture(cmd, args, opts = {}) {
 	const r = spawnSync(cmd, args, {
 		encoding: "utf8",
@@ -291,28 +310,39 @@ async function main() {
 	try {
 		const init = spawnNpm(["init", "-y"], { cwd: smokeDir });
 		if (init.status !== 0) warn("npm init failed:", init.stderr || init.stdout);
-		const tryInstall = () =>
-			spawnNpm(["install", `${pkgName}@${newVersion}`], { cwd: smokeDir });
-		let inst = tryInstall();
-		if (inst.status !== 0) {
-			warn("Registry lag, retrying in 10s...");
-			await new Promise((r) => setTimeout(r, 10_000));
-			inst = tryInstall();
-		}
-		if (inst.status !== 0) {
-			warn("npm install failed:", inst.stderr || inst.stdout);
-		} else {
-			const probe = spawnSync(
-				process.execPath,
-				[
-					"--input-type=module",
-					"-e",
-					`import('${pkgName}').then(m => { console.log(typeof m.createId); process.exit(0); }).catch(e => { console.error(e); process.exit(1); })`,
-				],
-				{ cwd: smokeDir, encoding: "utf8" },
+
+		const visible = await waitForNpmVersion(pkgName, newVersion);
+		if (!visible) {
+			warn(
+				`Smoke: timed out waiting for ${pkgName}@${newVersion} on registry — skip install (check npmjs.com in a few minutes).`,
 			);
-			if (probe.stdout?.trim() === "function") log("Smoke test passed");
-			else warn("Smoke probe output:", probe.stdout, probe.stderr);
+		} else {
+			const tryInstall = () =>
+				spawnNpm(
+					["install", `${pkgName}@${newVersion}`, "--prefer-online", "--no-fund", "--no-audit"],
+					{ cwd: smokeDir },
+				);
+			let inst = tryInstall();
+			for (let retry = 0; inst.status !== 0 && retry < 5; retry++) {
+				warn(`Smoke: npm install failed, retry ${retry + 1}/5 in 8s…`);
+				await new Promise((r) => setTimeout(r, 8000));
+				inst = tryInstall();
+			}
+			if (inst.status !== 0) {
+				warn("npm install failed:", inst.stderr || inst.stdout);
+			} else {
+				const probe = spawnSync(
+					process.execPath,
+					[
+						"--input-type=module",
+						"-e",
+						`import('${pkgName}').then(m => { console.log(typeof m.createId); process.exit(0); }).catch(e => { console.error(e); process.exit(1); })`,
+					],
+					{ cwd: smokeDir, encoding: "utf8" },
+				);
+				if (probe.stdout?.trim() === "function") log("Smoke test passed");
+				else warn("Smoke probe output:", probe.stdout, probe.stderr);
+			}
 		}
 	} finally {
 		rmSync(smokeDir, { recursive: true, force: true });
