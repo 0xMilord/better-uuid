@@ -1,6 +1,6 @@
 {
   "name": "better-uuid",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Structured, inspectable identifiers — not opaque random strings",
   "type": "module",
   "main": "./dist/index.cjs",

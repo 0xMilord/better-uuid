@@ -1,3 +1,7 @@
+## 0.0.4 (2026-04-06)
+
+- Update Docs and OSSDocs
+
 ## 0.0.3 (2026-04-06)
 
 - docs: update release documentation and PowerShell script for clarity and usage instructions
