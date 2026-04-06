@@ -1,0 +1,73 @@
+---
+name: Feature Request
+description: Propose a new strategy, API surface, or integration
+title: "feat: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every feature must map to a PRD requirement and a ROADMAP phase.
+        If no PRD row exists, explain why this is new scope.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Which layer does this affect?
+      options:
+        - Rust core (strategy, encoding, parsing)
+        - WASM boundary
+        - TypeScript API
+        - CLI
+        - Compat layer
+        - Docs only
+    validations:
+      required: true
+
+  - type: input
+    id: prd-ref
+    attributes:
+      label: PRD reference
+      description: Which PRD requirement ID does this address? (e.g. R3, A1, or "new scope")
+      placeholder: "R6"
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What production pain does this solve?
+      placeholder: "When debugging X, I currently have to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: API sketch, wire format changes, or behavioral description
+      placeholder: |
+        ```ts
+        createId({ newOption: true });
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you think about and why are they worse?
+
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Breaking change?
+      description: Does this change existing API behavior or wire format?
+      options:
+        - "No"
+        - "Yes — wire format"
+        - "Yes — API surface"
+        - "Yes — removal of existing feature"
+    validations:
+      required: true
