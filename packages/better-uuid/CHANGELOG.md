@@ -1,3 +1,7 @@
+## 0.0.5 (2026-04-06)
+
+- The published dist/index.js had extensionless ESM imports, e.g. from "./errors". Node’s ESM loader does not add .js for you, so resolution failed with ERR_MODULE_NOT_FOUND (Bundlers often do, which is why module: "Preserve" + moduleResolution: "bundler" hid the issue.) FIX: tsconfig.build.json — set "module": "NodeNext" and "moduleResolution": "NodeNext" so the emit matches Node ESM rules. All relative imports in src/ — use .js specifiers (e.g. ./errors.js, ./engine/wasm-loader.js). TypeScript still type-checks against the .ts files.
+
 ## 0.0.4 (2026-04-06)
 
 - Update Docs and OSSDocs
