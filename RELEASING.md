@@ -4,6 +4,8 @@
 
 Implementation: **`scripts/release.mjs`** (Node — works on Windows without PowerShell Core).
 
+If **`pnpm` is not on your PATH** (typical when you only use `npm run …`), the script falls back to **`npm exec -- pnpm …`**. You can also install pnpm globally or run `corepack enable` per the [pnpm install docs](https://pnpm.io/installation).
+
 From the **repository root** (pnpm workspace):
 
 ```bash

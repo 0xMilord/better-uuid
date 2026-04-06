@@ -43,6 +43,24 @@ function run(cmd, args, opts = {}) {
 	if (r.error) die(r.error.message);
 }
 
+/**
+ * Run pnpm. If `pnpm` is not on PATH (common on Windows when only npm is installed),
+ * fall back to `npm exec -- pnpm …` which resolves pnpm via npm.
+ */
+function runPnpm(args, opts = {}) {
+	const base = { encoding: "utf8", stdio: "inherit", cwd: rootDir, ...opts };
+	let r = spawnSync("pnpm", args, base);
+	if (r.error?.code === "ENOENT") {
+		warn("pnpm not on PATH; using npm exec pnpm …");
+		r = spawnSync("npm", ["exec", "--", "pnpm", ...args], {
+			...base,
+			shell: process.platform === "win32",
+		});
+	}
+	if (r.status !== 0 && r.status !== null) process.exit(r.status);
+	if (r.error) die(r.error.message);
+}
+
 function runCapture(cmd, args, opts = {}) {
 	const r = spawnSync(cmd, args, {
 		encoding: "utf8",
@@ -150,10 +168,11 @@ async function main() {
 		}
 
 		if (!hasCmd("cargo")) die("Rust toolchain not found (cargo)");
+		if (!hasCmd("pnpm") && !hasCmd("npm")) die("Need pnpm or npm on PATH for install/publish steps");
 		log("");
 		log("═══ Release plan (dry run) ═══");
 		log("1. git checkout main && git pull");
-		log("2. pnpm install --frozen-lockfile");
+		log("2. pnpm install --frozen-lockfile (or npm exec pnpm if pnpm missing from PATH)");
 		log("3. Rust: fmt, clippy, test");
 		log("4. TS: typecheck, test");
 		log("5. Bump version + CHANGELOG");
@@ -175,7 +194,7 @@ async function main() {
 	gitCleanCheckRelaxed();
 
 	log("Installing dependencies");
-	run("pnpm", ["install", "--frozen-lockfile"]);
+	runPnpm(["install", "--frozen-lockfile"]);
 
 	log("Running Rust fmt check");
 	run("cargo", ["fmt", "--check"]);
@@ -187,10 +206,10 @@ async function main() {
 	run("cargo", ["test", "--all-features"]);
 
 	log("Running TypeScript typecheck");
-	run("pnpm", ["typecheck"]);
+	runPnpm(["typecheck"]);
 
 	log("Running TypeScript tests");
-	run("pnpm", ["test"]);
+	runPnpm(["test"]);
 
 	let bump = process.env.RELEASE_BUMP;
 	let summary = process.env.RELEASE_SUMMARY;
@@ -246,7 +265,7 @@ async function main() {
 	run("git", ["tag", `v${newVersion}`]);
 
 	log(`Publishing ${pkgName}@${newVersion}`);
-	run("pnpm", ["--filter", pkgName, "publish", "--access", "public"]);
+	runPnpm(["--filter", pkgName, "publish", "--access", "public"]);
 
 	log("Pushing to origin");
 	run("git", ["push", "origin", "main"]);
