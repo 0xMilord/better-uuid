@@ -11,25 +11,27 @@
 // See ARCHITECTURE.md §9.1 for full risk documentation.
 // ---------------------------------------------------------------------------
 
-import { createId } from "../index.js";
+import { createId } from "../index";
 
 function isPatchEnabled(): boolean {
   // Check for BETTER_UUID_PATCH=1 in Node.js environments
-  if (typeof process !== "undefined" && process.env) {
-    return process.env.BETTER_UUID_PATCH === "1";
+  if (typeof process !== "undefined" && "env" in process) {
+    // biome-ignore lint/suspicious/noExplicitAny: process.env type
+    const env = (process as any).env as Record<string, string | undefined>;
+    return env.BETTER_UUID_PATCH === "1";
   }
   // In browser/edge, default to disabled — no env vars available.
   return false;
 }
 
 if (isPatchEnabled()) {
-  globalThis.crypto.randomUUID = (): string => {
+  // biome-ignore lint/suspicious/noExplicitAny: overriding standard API
+  (globalThis.crypto as any).randomUUID = (): string => {
     // Route through better-uuid with UUID v4 shape
     return createId({ strategy: "uuidv4", mode: "safe" });
   };
 
   // Log exactly once at startup (trace-level equivalent via console.warn)
-  // Using a module-level flag to prevent duplicate logs in hot-reload scenarios
   const loggedKey = "__better_uuid_patch_logged__";
   // biome-ignore lint/suspicious/noExplicitAny: globalThis extension
   const global = globalThis as Record<string, unknown>;

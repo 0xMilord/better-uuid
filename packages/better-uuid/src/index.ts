@@ -5,7 +5,6 @@
 import type {
   BetterUuidConfig,
   CreateIdOptions,
-  ParseError,
   ParsedId,
   StrategyName,
 } from "./types";
@@ -118,7 +117,7 @@ export function parseId(id: string): ParsedId {
   const match = id.match(legacyUuidRegex);
 
   if (match) {
-    const versionNibble = match[1];
+    const versionNibble = match[1]!;
     let strategy: StrategyName = `unknown(${Number.parseInt(versionNibble, 16)})`;
     if (versionNibble === "4") strategy = "uuidv4";
     if (versionNibble === "7") strategy = "time";
