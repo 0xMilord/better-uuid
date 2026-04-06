@@ -37,18 +37,34 @@
 
 `0-9a-f` with dashes at `8-4-4-4-12` positions for `uuidv4` and `time` (RFC UUID v7 form).
 
-## 3. Strategy bit layouts (TBD)
+## 3. Strategy bit layouts
 
-Each strategy section will document:
-- Total bit width
-- Field breakdown (timestamp, entropy, node, sequence, version)
-- Collision model (entropy bits, birthday bound)
-- CSPRNG source
+### 3.1 UUID v4 (`uuidv4`, strategy `0x00`)
+
+| Field | Bits | Value |
+|-------|------|-------|
+| `random` | 122 | CSPRNG |
+| `version` | 4 | `0100` |
+| `variant` | 2 | `10` |
+
+**Output:** RFC 4122 `8-4-4-4-12` hex. No prefix by default.
+
+### 3.2 UUID v7 (`time`, strategy `0x01`)
+
+| Field | Bits | Value |
+|-------|------|-------|
+| `unix_ts_ms` | 48 | Unix epoch milliseconds (big-endian) |
+| `version` | 4 | `0111` |
+| `sub_ms_counter` | 12 | Monotonic counter (0–4095) |
+| `variant` | 2 | `10` |
+| `random` | 62 | CSPRNG |
+
+**Output:** RFC 9562 `8-4-4-4-12` hex. Optional prefix prepended.
+
+### 3.3 Future strategies (Phase 3+)
 
 | Strategy | Doc | Status |
 |----------|-----|--------|
-| `uuidv4` | — | TBD |
-| `time` (UUID v7–class) | — | TBD |
 | `ulid` | — | TBD |
 | `nanoid` | — | TBD |
 | `snowflake` | — | TBD |

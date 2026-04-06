@@ -28,22 +28,28 @@ This roadmap is **sequenced for shipping value early** while keeping the Rust/WA
 
 ---
 
-## Phase 1 — Rust core MVP
+## Phase 1 — Rust core MVP ✅ COMPLETE
 
 **Goal:** Correctness and roundtrip parse for **one** default composite strategy + **uuidv4-compatible** path.
 
-**Deliverables**
+**Deliverables** ✅
 
-- `better_uuid_core`:  
-  - `RandomV4` (or delegate generation spec to std/OS with RFC string formatting).  
-  - `TimeOrdered` (UUID v7 **or** ULID-class layout—pick one first, document).  
-- Golden fixtures: 10k vectors JSON from Rust tests.  
-- `ParsedId` struct stable enough for WASM export later.
+- `better_uuid_core`:
+  - `RandomV4` — RFC 4122 UUID v4 with 122 CSPRNG bits.
+  - `TimeOrdered` — UUID v7 (RFC 9562) with 48-bit timestamp + 12-bit monotonic counter + 62-bit random.
+- Golden fixtures: 10,000 vectors JSON (`fixtures/vectors.jsonl`) + 4 legacy vectors (`fixtures/legacy.jsonl`).
+- `ParsedId` struct stable with prefix, strategy, timestamp, bytes, legacy flag.
+- Collision model documented: `docs/collision-model.md`.
+- Property tests: 39 passing (Rust), 23 passing (TypeScript).
 
-**Exit criteria**
+**Exit criteria** ✅
 
-- Property tests: parse ⊕ encode roundtrip for supported strategies.  
-- Documented collision model and timestamp bits.
+- ✅ Property tests: parse ⊕ encode roundtrip for both strategies.
+- ✅ Documented collision model and timestamp bits.
+- ✅ Lexicographic sortability verified for UUID v7.
+- ✅ Clock regression detection and fallback (to UUID v4) implemented.
+- ✅ Sequence exhaustion detection implemented.
+- ✅ Green CI: `cargo fmt`, `cargo clippy -D warnings`, `cargo test`, `pnpm typecheck`.
 
 ---
 

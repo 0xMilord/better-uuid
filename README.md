@@ -4,7 +4,7 @@
 
 **TypeScript-first, Rust-powered identifiers** compiled to WebAssembly. Treat IDs as **structured, inspectable values** — not opaque random strings.
 
-**Status:** ✅ Phase 0 complete — monorepo scaffolded, Rust core + WASM crates + TS package structured, CI green (15 Rust + 23 TS tests passing). Phase 1 (Rust strategies + golden fixtures) in progress.
+**Status:** ✅ Phase 1 complete — Rust core with UUID v4 + UUID v7 strategies, full roundtrip parse, 39 Rust + 23 TS tests passing, 10k golden fixtures generated, collision model documented. Phase 2 (WASM bindings + TS `createId`/`parseId`) in progress.
 
 ---
 
@@ -98,18 +98,6 @@ Full guarantee table: [PRD.md §5.0](PRD.md#50-guarantees-plain-language).
 
 ---
 
-## When NOT to use this
-
-Saying "don't use this" is how you earn trust. Be blunt:
-
-- **If you need strict RFC-only UUID storage** → use `uuid` v7 directly. We can emit RFC-shaped IDs, but we're not a compliance library.
-- **If you never debug logs or trace across services** → this adds no value. `crypto.randomUUID()` is fine.
-- **If your system is single-process and simple** → overkill. You don't need snowflake mode for one server.
-- **If you need globally coordinated IDs with central allocation** → out of scope. We generate IDs offline, no consensus protocol.
-
-**If your IDs cross service boundaries, end up in logs, or become database primary keys** — this is for you.
-
----
 
 ## Compared to alternatives
 
