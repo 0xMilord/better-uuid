@@ -1,14 +1,33 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cargo fmt *)",
-      "Bash(pnpm install)",
-      "Bash(pnpm *)",
-      "Bash(@echo *)",
-      "Bash(npx *)",
-      "Bash(findstr *)",
-      "Bash(type *)",
-      "Bash(npm install)"
+      "Bash(*)",
+      "Bash(wasm-pack *)"
+      "Bash(pnpm install *)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm build *)",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm format *)",
+      "Bash(pnpm release *)",
+      "Bash(pnpm release:dry-run *)",
+      "Bash(pnpm release:unix *)",
+      "Bash(pnpm release:unix:dry-run *)",
+      "Bash(pnpm release:windows *)",
+      "Bash(pnpm release:windows:dry-run *)",
+      "Bash(pnpm release:macos *)",
+      "Bash(pnpm release:macos:dry-run *)",
+      "Bash(pnpm release:linux *)",
+      "Bash(pnpm release:linux:dry-run *)",
+      "Bash(pnpm release:windows:dry-run *)",
+      "Bash(pnpm release:macos:dry-run *)",
+      "Bash(pnpm release:linux:dry-run *)",
+      "Bash(pnpm release:windows:dry-run *)",
+      "Bash(pnpm release:macos:dry-run *)",
+      "Bash(pnpm release:linux:dry-run *)",
+      "Bash(pnpm release:windows:dry-run *)",
+      "Bash(pnpm release:macos:dry-run *)",
+      "*"
     ]
   },
   "$version": 3

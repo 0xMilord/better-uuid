@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ title }} — better-uuid</title>
-  <meta name="description" content="{{ description | default: 'Structured, inspectable identifiers — not opaque random strings' }}">
+  <meta name="description" content="{{ description or 'Structured, inspectable identifiers — not opaque random strings' }}">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -25,17 +25,17 @@
 
         <div class="nav-group">
           <div class="nav-group-title">API Reference</div>
-          <a href="/api/createId/" class="nav-item{% if page.url == '/api/createId/' %} active{% endif %}">createId()</a>
-          <a href="/api/parseId/" class="nav-item{% if page.url == '/api/parseId/' %} active{% endif %}">parseId()</a>
-          <a href="/api/isLegacyId/" class="nav-item{% if page.url == '/api/isLegacyId/' %} active{% endif %}">isLegacyId()</a>
-          <a href="/api/configure/" class="nav-item{% if page.url == '/api/configure/' %} active{% endif %}">configure()</a>
-          <a href="/api/withIdContext/" class="nav-item{% if page.url == '/api/withIdContext/' %} active{% endif %}">withIdContext()</a>
+          <a href="/api/createId/" class="nav-item{% if '/api/createId/' in page.url %} active{% endif %}">createId()</a>
+          <a href="/api/parseId/" class="nav-item{% if '/api/parseId/' in page.url %} active{% endif %}">parseId()</a>
+          <a href="/api/isLegacyId/" class="nav-item{% if '/api/isLegacyId/' in page.url %} active{% endif %}">isLegacyId()</a>
+          <a href="/api/configure/" class="nav-item{% if '/api/configure/' in page.url %} active{% endif %}">configure()</a>
+          <a href="/api/withIdContext/" class="nav-item{% if '/api/withIdContext/' in page.url %} active{% endif %}">withIdContext()</a>
         </div>
 
         <div class="nav-group">
           <div class="nav-group-title">Compat Layer</div>
-          <a href="/api/compat-uuid/" class="nav-item{% if page.url == '/api/compat-uuid/' %} active{% endif %}">compat/uuid</a>
-          <a href="/api/compat-nanoid/" class="nav-item{% if page.url == '/api/compat-nanoid/' %} active{% endif %}">compat/nanoid</a>
+          <a href="/api/compat-uuid/" class="nav-item{% if '/api/compat-uuid/' in page.url %} active{% endif %}">compat/uuid</a>
+          <a href="/api/compat-nanoid/" class="nav-item{% if '/api/compat-nanoid/' in page.url %} active{% endif %}">compat/nanoid</a>
         </div>
 
         <div class="nav-group">
