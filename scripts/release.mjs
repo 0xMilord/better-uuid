@@ -61,6 +61,16 @@ function runPnpm(args, opts = {}) {
 	if (r.error) die(r.error.message);
 }
 
+/** `npm` on Windows is `npm.cmd`; spawn without shell often returns ENOENT. */
+function spawnNpm(args, opts = {}) {
+	return spawnSync("npm", args, {
+		encoding: "utf8",
+		stdio: "pipe",
+		shell: process.platform === "win32",
+		...opts,
+	});
+}
+
 function runCapture(cmd, args, opts = {}) {
 	const r = spawnSync(cmd, args, {
 		encoding: "utf8",
@@ -177,8 +187,9 @@ async function main() {
 		log("4. TS: typecheck, test");
 		log("5. Bump version + CHANGELOG");
 		log("6. git commit + tag");
-		log("7. pnpm publish");
-		log("8. Smoke test");
+		log("7. pnpm --filter better-uuid build (dist/ + wasm/; not in git)");
+		log("8. pnpm publish");
+		log("9. Smoke test");
 		log("");
 		log("═══ Dry run complete ═══");
 		return;
@@ -264,6 +275,9 @@ async function main() {
 	run("git", ["commit", "-m", `release: v${newVersion} — ${summary}`]);
 	run("git", ["tag", `v${newVersion}`]);
 
+	log(`Building ${pkgName} (dist + wasm) for publish`);
+	runPnpm(["--filter", pkgName, "build"]);
+
 	log(`Publishing ${pkgName}@${newVersion}`);
 	runPnpm(["--filter", pkgName, "publish", "--access", "public"]);
 
@@ -274,13 +288,10 @@ async function main() {
 	log("Running smoke test");
 	const smokeDir = mkdtempSync(path.join(tmpdir(), "better-uuid-smoke-"));
 	try {
-		run("npm", ["init", "-y"], { cwd: smokeDir, stdio: "pipe" });
+		const init = spawnNpm(["init", "-y"], { cwd: smokeDir });
+		if (init.status !== 0) warn("npm init failed:", init.stderr || init.stdout);
 		const tryInstall = () =>
-			spawnSync("npm", ["install", `${pkgName}@${newVersion}`], {
-				cwd: smokeDir,
-				encoding: "utf8",
-				stdio: "pipe",
-			});
+			spawnNpm(["install", `${pkgName}@${newVersion}`], { cwd: smokeDir });
 		let inst = tryInstall();
 		if (inst.status !== 0) {
 			warn("Registry lag, retrying in 10s...");

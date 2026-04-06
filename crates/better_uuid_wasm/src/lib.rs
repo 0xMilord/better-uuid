@@ -248,6 +248,9 @@ pub fn schema_version() -> u8 {
 // ---------------------------------------------------------------------------
 // WASM tests
 // ---------------------------------------------------------------------------
+//
+// `#[wasm_bindgen_test]` runs via `wasm-pack test` / browser, not plain `cargo test`.
+// Host-side smoke tests live in `host_tests` below.
 
 #[cfg(test)]
 mod wasm_tests {
@@ -352,5 +355,18 @@ mod wasm_tests {
         assert!(!parse_result.legacy);
         assert_eq!(parse_result.strategy, "time");
         assert_eq!(parse_result.prefix, Some("ord".to_string()));
+    }
+}
+
+/// Host `cargo test` (no JS VM). Keeps `better_uuid_wasm` from reporting "0 tests" while
+/// `#[wasm_bindgen_test]` suites remain the main WASM coverage path.
+#[cfg(test)]
+mod host_tests {
+    use better_uuid_core::parse::parse_id;
+
+    #[test]
+    fn parse_legacy_uuid_smoke() {
+        let p = parse_id("550e8400-e29b-41d4-a716-446655440000").unwrap();
+        assert!(p.legacy);
     }
 }
