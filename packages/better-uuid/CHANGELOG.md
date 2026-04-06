@@ -1,3 +1,7 @@
+## 0.0.3 (2026-04-06)
+
+- docs: update release documentation and PowerShell script for clarity and usage instructions
+
 ## 0.0.2 (2026-04-06)
 
 - feat: implement core UUID generation and parsing logic with WASM and JS engine support
