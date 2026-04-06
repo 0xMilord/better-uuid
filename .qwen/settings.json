@@ -2,7 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(*)",
-      "Bash(wasm-pack *)"
+      "Bash(wasm-pack *)",
       "Bash(pnpm install *)",
       "Bash(pnpm test *)",
       "Bash(pnpm typecheck *)",

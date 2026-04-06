@@ -8,16 +8,20 @@ import type {
   ParsedId,
   StrategyName,
 } from "./types";
+import { GenerateError, ParseError } from "./errors";
 
 export {
   BetterUuidError,
   GenerateError,
+  ParseError,
   type BetterUuidConfig,
   type CreateIdOptions,
-  type ParseError,
   type ParsedId,
   type StrategyName,
 } from "./types";
+
+// Engine (lazy init)
+import { initEngine, getEngineSync, isWasmAvailable } from "./engine/wasm-loader";
 
 // ---------------------------------------------------------------------------
 // Module singleton — stores org-wide defaults from createId.configure()
@@ -53,7 +57,7 @@ export function _resetConfig(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Placeholder generation (Phase 1: wired to WASM)
+// createId
 // ---------------------------------------------------------------------------
 
 /**
@@ -65,31 +69,50 @@ export function _resetConfig(): void {
  * ```
  *
  * @param options - Strategy, prefix, and policy overrides.
- * @returns Generated ID string.
+ * @returns Generated ID string (or array of strings if count > 1).
  * @throws {GenerateError} When generation fails (clock regression, etc.).
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function createId(_options?: CreateIdOptions): string {
-  // Phase 0 placeholder — wired to WASM/JS engine in Phase 1–2.
+export function createId(_options?: CreateIdOptions): string | string[] {
+  const engine = getEngineSync();
+
   const strategy = _options?.strategy ?? _config.defaultStrategy ?? "time";
   const prefix = _options?.prefix;
+  const mode = _options?.mode;
+  const count = _options?.count;
 
-  // Generate a realistic placeholder for DX during Phase 0
-  // This will be replaced by real WASM calls in Phase 1
-  const randomHex = globalThis.crypto.randomUUID().replace(/-/g, "");
-  const payload = prefix ? `${prefix}_${randomHex}` : randomHex;
-
-  if (_options?.mode === "safe") {
-    // Safe mode: return UUID-shaped ID
-    return globalThis.crypto.randomUUID();
+  // Safe mode: force UUID v4, no prefix
+  if (mode === "safe") {
+    const opts: { strategy: string; count?: number } = { strategy: "uuidv4" };
+    if (count !== undefined) opts.count = count;
+    return engine.generate(opts);
   }
 
-  // Tag with strategy for parseId demo
-  return `[${strategy}]${payload}`;
+  // Prefix validation (charset + length + reserved)
+  if (prefix) {
+    if (!/^[a-z0-9]{1,12}$/.test(prefix)) {
+      throw new GenerateError(
+        `Invalid prefix: "${prefix}" — must be [a-z0-9]{1,12}, not reserved`,
+        strategy as StrategyName | undefined,
+      );
+    }
+    const reserved = ["btr", "sys", "_", ""];
+    if (reserved.includes(prefix)) {
+      throw new GenerateError(
+        `Invalid prefix: "${prefix}" — reserved`,
+        strategy as StrategyName | undefined,
+      );
+    }
+  }
+
+  const opts: { strategy: string; prefix?: string; count?: number } = { strategy };
+  if (prefix !== undefined) opts.prefix = prefix;
+  if (count !== undefined) opts.count = count;
+
+  return engine.generate(opts);
 }
 
 // ---------------------------------------------------------------------------
-// Placeholder parse (Phase 2: wired to WASM)
+// parseId
 // ---------------------------------------------------------------------------
 
 /**
@@ -110,56 +133,12 @@ export function createId(_options?: CreateIdOptions): string {
  * @throws {ParseError} When the input doesn't match any known format.
  */
 export function parseId(id: string): ParsedId {
-  // Phase 0: legacy UUID detection works; native parsing wired in Phase 2
-
-  // Check for legacy RFC UUID format (8-4-4-4-12 hex)
-  const legacyUuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-([0-9a-f])[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const match = id.match(legacyUuidRegex);
-
-  if (match) {
-    const versionNibble = match[1]!;
-    let strategy: StrategyName = `unknown(${Number.parseInt(versionNibble, 16)})`;
-    if (versionNibble === "4") strategy = "uuidv4";
-    if (versionNibble === "7") strategy = "time";
-
-    return {
-      legacy: true,
-      prefix: undefined,
-      strategy,
-      schemaVersion: undefined,
-      timestampMs: undefined,
-      entropy: id.replace(/-/g, ""),
-      nodeId: undefined,
-      region: undefined,
-    };
-  }
-
-  // Native better-uuid format: [strategy]prefix_payload
-  const nativeMatch = id.match(/^\[(\w+)\]((\w+)_)?([0-9a-f]+)$/i);
-  if (nativeMatch) {
-    const rawStrategy = nativeMatch[1];
-    const rawPrefix = nativeMatch[3];
-    const payload = nativeMatch[4];
-    return {
-      legacy: false,
-      prefix: rawPrefix,
-      strategy: rawStrategy as StrategyName,
-      schemaVersion: 1,
-      timestampMs: undefined,
-      entropy: payload ?? "",
-      nodeId: undefined,
-      region: undefined,
-    };
-  }
-
-  // Fallback: reject
-  throw new Error(
-    `Invalid format: "${id.slice(0, 20)}" — not a recognized better-uuid or legacy UUID format`,
-  );
+  const engine = getEngineSync();
+  return engine.parse(id);
 }
 
 // ---------------------------------------------------------------------------
-// isLegacyId helper
+// isLegacyId
 // ---------------------------------------------------------------------------
 
 /**
@@ -168,15 +147,12 @@ export function parseId(id: string): ParsedId {
  * Useful for metrics, dual-read code paths, and UI branching.
  */
 export function isLegacyId(id: string): boolean {
-  try {
-    return parseId(id).legacy;
-  } catch {
-    return false;
-  }
+  const engine = getEngineSync();
+  return engine.isLegacy(id);
 }
 
 // ---------------------------------------------------------------------------
-// withIdContext (AsyncLocalStorage-based request scoping)
+// withIdContext
 // ---------------------------------------------------------------------------
 
 type IdContext = Record<string, string | undefined>;
@@ -198,16 +174,26 @@ type IdContext = Record<string, string | undefined>;
  * @returns The return value of `fn()`.
  */
 export function withIdContext<T>(_ctx: IdContext, fn: () => T): T {
-  // Phase 2: will integrate with AsyncLocalStorage for Node.js
-  // and equivalent patterns for Edge runtimes.
-  // For Phase 0, this is a pass-through that executes fn().
+  // Phase 2: pass-through. Phase 5: integrate AsyncLocalStorage.
   return fn();
 }
 
+// ---------------------------------------------------------------------------
+// WASM status
+// ---------------------------------------------------------------------------
+
 /**
- * Get the current request context (for internal use).
- * Returns undefined if called outside `withIdContext`.
+ * Check if the WASM engine is active (true) or JS fallback (false).
  */
-export function _getCurrentContext(): IdContext | undefined {
-  return undefined;
+export function isWasm(): boolean {
+  return isWasmAvailable();
+}
+
+/**
+ * Initialize the WASM engine asynchronously.
+ * Call this at app startup for best performance.
+ * Falls back to JS automatically if WASM is unavailable.
+ */
+export async function init(): Promise<void> {
+  await initEngine();
 }

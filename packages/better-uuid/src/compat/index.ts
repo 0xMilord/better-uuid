@@ -17,7 +17,7 @@ import { createId } from "../index";
  * teams migrating from `uuid`/`nanoid` who want sortable IDs immediately.
  */
 export function id(): string {
-  return createId({ strategy: "time" });
+  return createId({ strategy: "time" }) as string;
 }
 
 export { id as default };

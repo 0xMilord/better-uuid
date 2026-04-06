@@ -28,7 +28,7 @@ if (isPatchEnabled()) {
   // biome-ignore lint/suspicious/noExplicitAny: overriding standard API
   (globalThis.crypto as any).randomUUID = (): string => {
     // Route through better-uuid with UUID v4 shape
-    return createId({ strategy: "uuidv4", mode: "safe" });
+    return createId({ strategy: "uuidv4", mode: "safe" }) as string;
   };
 
   // Log exactly once at startup (trace-level equivalent via console.warn)

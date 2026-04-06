@@ -66,7 +66,7 @@ describe("parseId", () => {
   });
 
   it("parses native better-uuid placeholder format", () => {
-    const id = createId({ prefix: "usr", strategy: "time" });
+    const id = createId({ prefix: "usr", strategy: "time" }) as string;
     const result = parseId(id);
     expect(result.legacy).toBe(false);
     expect(result.strategy).toBe("time");
@@ -80,7 +80,7 @@ describe("isLegacyId", () => {
   });
 
   it("returns false for native IDs", () => {
-    const id = createId({ strategy: "time" });
+    const id = createId({ strategy: "time" }) as string;
     expect(isLegacyId(id)).toBe(false);
   });
 

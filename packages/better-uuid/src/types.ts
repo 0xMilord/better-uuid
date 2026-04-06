@@ -10,15 +10,9 @@ export type StrategyName =
   | "nanoid"
   | "snowflake"
   | "deterministic"
-  | `unknown(${number})`;
+  | `unknown(${string})`;
 
-/** How to handle clock regression in snowflake strategies (PRD §7.1). */
-export type ClockRegressionPolicy = "wait" | "error" | "fallback";
-
-/** How to handle sequence counter overflow (PRD §7.1). */
-export type SequenceExhaustedPolicy = "wait" | "error";
-
-/** Options for `createId()`. Discriminated by `strategy`. */
+/** Options for `createId()`. */
 export interface CreateIdOptions {
   /** ID generation strategy. Defaults to configured `defaultStrategy`. */
   strategy?: StrategyName;
@@ -32,20 +26,17 @@ export interface CreateIdOptions {
    */
   mode?: "safe";
 
-  /** Deterministic input (for `deterministic` strategy). */
-  input?: string;
-
   /** Snowflake: unique node identifier (0–1023). */
   node?: number;
 
   /** Snowflake: region slug (e.g. "in-west"). */
   region?: string;
 
-  /** Snowflake: behavior when OS clock regresses. */
-  onClockRegression?: ClockRegressionPolicy;
+  /** Snowflake: behavior on clock regression. */
+  onClockRegression?: "wait" | "error" | "fallback";
 
-  /** Snowflake: behavior when per-ms sequence overflows. */
-  onSequenceExhausted?: SequenceExhaustedPolicy;
+  /** Snowflake: behavior on sequence overflow. */
+  onSequenceExhausted?: "wait" | "error";
 
   /** Generate N IDs in a single call (batch API for seeding/load testing). */
   count?: number;
@@ -93,6 +84,10 @@ export interface BetterUuidConfig {
   strict?: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Error types
+// ---------------------------------------------------------------------------
+
 /** Base error for all better-uuid exceptions. */
 export class BetterUuidError extends Error {
   public readonly code: string;
@@ -109,8 +104,8 @@ export class ParseError extends BetterUuidError {
   public readonly position: number;
   public readonly snippet: string;
 
-  constructor(message: string, position: number, snippet: string) {
-    super("PARSE_ERROR", message);
+  constructor(message: string, position: number, snippet: string, options?: ErrorOptions) {
+    super("PARSE_ERROR", message, options);
     this.name = "ParseError";
     this.position = position;
     this.snippet = snippet;

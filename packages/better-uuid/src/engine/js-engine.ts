@@ -5,8 +5,8 @@
 // Provides identical API to the WASM engine for seamless fallback.
 // ---------------------------------------------------------------------------
 
-import type { ParsedId, StrategyName, GenerateError, ParseError } from "./types";
-import { BetterUuidError, GenerateError as GenErr, ParseError as ParsErr } from "./errors";
+import type { ParsedId, StrategyName } from "../types";
+import { BetterUuidError, GenerateError, ParseError } from "../errors";
 
 // ---------------------------------------------------------------------------
 // UUID v4 generation (122 CSPRNG bits)
@@ -15,9 +15,9 @@ import { BetterUuidError, GenerateError as GenErr, ParseError as ParsErr } from 
 function generateV4(): string {
   const bytes = cryptoGetRandom(16);
   // Version 4
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40;
   // Variant 10
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
   return formatUuid(bytes);
 }
 
@@ -40,7 +40,7 @@ function generateV7(nowMs: number): string {
   if (nowMs > _v7LastTs) {
     // New millisecond — random counter start (11 bits = 0-2047)
     const rand = cryptoGetRandom(2);
-    counter = ((rand[0] << 3) | (rand[1] >> 5)) & 0x7ff;
+    counter = ((rand[0]! << 3) | (rand[1]! >> 5)) & 0x7ff;
     _v7LastTs = nowMs;
     _v7Counter = counter;
   } else {
@@ -69,7 +69,7 @@ function generateV7(nowMs: number): string {
   bytes[7] = counter & 0xff;
 
   // Byte 8: variant 10 (top 2 bits) + random
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80;
 
   return formatUuid(bytes);
 }
@@ -81,11 +81,11 @@ function generateV7(nowMs: number): string {
 function formatUuid(bytes: Uint8Array): string {
   const h = (n: number) => n.toString(16).padStart(2, "0");
   return (
-    h(bytes[0]) + h(bytes[1]) + h(bytes[2]) + h(bytes[3]) + "-" +
-    h(bytes[4]) + h(bytes[5]) + "-" +
-    h(bytes[6]) + h(bytes[7]) + "-" +
-    h(bytes[8]) + h(bytes[9]) + "-" +
-    h(bytes[10]) + h(bytes[11]) + h(bytes[12]) + h(bytes[13]) + h(bytes[14]) + h(bytes[15])
+    h(bytes[0]!) + h(bytes[1]!) + h(bytes[2]!) + h(bytes[3]!) + "-" +
+    h(bytes[4]!) + h(bytes[5]!) + "-" +
+    h(bytes[6]!) + h(bytes[7]!) + "-" +
+    h(bytes[8]!) + h(bytes[9]!) + "-" +
+    h(bytes[10]!) + h(bytes[11]!) + h(bytes[12]!) + h(bytes[13]!) + h(bytes[14]!) + h(bytes[15]!)
   );
 }
 
@@ -141,6 +141,8 @@ export interface JsEngine {
   }): string | string[];
   parse(id: string): ParsedId;
   isLegacy(id: string): boolean;
+  schemaVersion(): number;
+  isWasm(): boolean;
 }
 
 export function createJsEngine(): JsEngine {
@@ -165,7 +167,7 @@ export function createJsEngine(): JsEngine {
         } else if (strategy === "time" || strategy === "v7" || strategy === "uuidv7") {
           id = generateV7(nowMs);
         } else {
-          throw new GenErr(
+          throw new GenerateError(
             `Unsupported strategy: "${strategy}"`,
             strategy as StrategyName | undefined,
           );
@@ -186,18 +188,18 @@ export function createJsEngine(): JsEngine {
 
         // Validate prefix
         if (!/^[a-z0-9]{1,12}$/.test(prefix)) {
-          throw new ParsErr(`Invalid prefix: "${prefix}"`, 0, prefix);
+          throw new ParseError(`Invalid prefix: "${prefix}"`, 0, prefix);
         }
 
         const bytes = parseUuidHex(body);
         if (!bytes) {
-          throw new ParsErr(`Invalid format: "${id.slice(0, 20)}"`, 0, id.slice(0, 20));
+          throw new ParseError(`Invalid format: "${id.slice(0, 20)}"`, 0, id.slice(0, 20));
         }
 
-        const versionNibble = body[14]?.toUpperCase();
-        const variantNibble = body[19]?.toUpperCase();
-        if (!["8", "9", "A", "B"].includes(variantNibble ?? "")) {
-          throw new ParsErr(`Invalid format: "${id.slice(0, 20)}"`, 0, id.slice(0, 20));
+        const versionNibble = (body[14] ?? "").toUpperCase();
+        const variantNibble = (body[19] ?? "").toUpperCase();
+        if (!["8", "9", "A", "B"].includes(variantNibble)) {
+          throw new ParseError(`Invalid format: "${id.slice(0, 20)}"`, 0, id.slice(0, 20));
         }
 
         let strategy: StrategyName = "uuidv4";
@@ -211,7 +213,7 @@ export function createJsEngine(): JsEngine {
         } else if (versionNibble === "4") {
           strategy = "uuidv4";
         } else {
-          strategy = `unknown(${versionNibble ?? "?"})` as StrategyName;
+          strategy = `unknown(${versionNibble})` as StrategyName;
         }
 
         return {
@@ -228,7 +230,7 @@ export function createJsEngine(): JsEngine {
 
       // Legacy UUID
       if (isLegacyUuid(id)) {
-        const version = id[14]?.toLowerCase();
+        const version = (id[14] ?? "").toLowerCase();
         let strategy: StrategyName = "uuidv4";
         let timestampMs: bigint | undefined;
 
@@ -239,7 +241,7 @@ export function createJsEngine(): JsEngine {
         } else if (version === "4") {
           strategy = "uuidv4";
         } else {
-          strategy = `unknown(${version ?? "?"})` as StrategyName;
+          strategy = `unknown(${version})` as StrategyName;
         }
 
         return {
@@ -254,7 +256,7 @@ export function createJsEngine(): JsEngine {
         };
       }
 
-      throw new ParsErr(
+      throw new ParseError(
         `Invalid format: "${id.slice(0, 20)}"`,
         0,
         id.slice(0, 20),
@@ -263,6 +265,14 @@ export function createJsEngine(): JsEngine {
 
     isLegacy(id: string): boolean {
       return isLegacyUuid(id);
+    },
+
+    schemaVersion(): number {
+      return 1;
+    },
+
+    isWasm(): boolean {
+      return false;
     },
   };
 }
