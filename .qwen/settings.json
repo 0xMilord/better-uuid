@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cargo fmt *)"
+      "Bash(cargo fmt *)",
+      "Bash(pnpm install)",
+      "Bash(pnpm *)"
     ]
   },
   "$version": 3

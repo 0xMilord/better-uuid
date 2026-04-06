@@ -24,7 +24,7 @@ export function nanoid(size: number = NANOID_DEFAULT_LENGTH): string {
   const step = Math.ceil((1.6 * mask * size) / alphabet.length);
 
   let result = "";
-  const bytes = crypto.getRandomValues(new Uint8Array(step));
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(step));
   let i = 0;
 
   while (result.length < size) {
@@ -35,7 +35,7 @@ export function nanoid(size: number = NANOID_DEFAULT_LENGTH): string {
     i++;
     if (i >= bytes.length) {
       // Replenish entropy
-      crypto.getRandomValues(bytes);
+      globalThis.crypto.getRandomValues(bytes);
       i = 0;
     }
   }
@@ -57,7 +57,7 @@ export function customAlphabet(
   return (size: number = defaultSize): string => {
     const step = Math.ceil((1.6 * mask * size) / alphabet.length);
     let result = "";
-    const bytes = crypto.getRandomValues(new Uint8Array(step));
+    const bytes = globalThis.crypto.getRandomValues(new Uint8Array(step));
     let i = 0;
 
     while (result.length < size) {
@@ -67,7 +67,7 @@ export function customAlphabet(
       }
       i++;
       if (i >= bytes.length) {
-        crypto.getRandomValues(bytes);
+        globalThis.crypto.getRandomValues(bytes);
         i = 0;
       }
     }

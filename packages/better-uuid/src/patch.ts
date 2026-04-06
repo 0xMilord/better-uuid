@@ -11,41 +11,34 @@
 // See ARCHITECTURE.md §9.1 for full risk documentation.
 // ---------------------------------------------------------------------------
 
-import { createId } from "../index";
-
-const PATCH_ENV = "BETTER_UUID_PATCH";
+import { createId } from "../index.js";
 
 function isPatchEnabled(): boolean {
+  // Check for BETTER_UUID_PATCH=1 in Node.js environments
   if (typeof process !== "undefined" && process.env) {
-    return process.env[PATCH_ENV] === "1";
+    return process.env.BETTER_UUID_PATCH === "1";
   }
   // In browser/edge, default to disabled — no env vars available.
   return false;
 }
 
-if (!isPatchEnabled()) {
-  // Silently no-op if not explicitly enabled.
-  // We do NOT throw — the import might happen in a shared dependency
-  // and we don't want to crash the process.
-  export {};
-} else {
-  const originalRandomUUID = globalThis.crypto.randomUUID.bind(globalThis.crypto);
-
+if (isPatchEnabled()) {
   globalThis.crypto.randomUUID = (): string => {
     // Route through better-uuid with UUID v4 shape
     return createId({ strategy: "uuidv4", mode: "safe" });
   };
 
-  // Log exactly once at startup (trace-level equivalent via console.trace)
+  // Log exactly once at startup (trace-level equivalent via console.warn)
   // Using a module-level flag to prevent duplicate logs in hot-reload scenarios
-  const loggedSymbol = Symbol.for("better-uuid.patch.logged");
-  if (!(globalThis as Record<symbol, boolean>)[loggedSymbol]) {
-    // biome-ignore lint/suspicious/noConsole: intentional side-effect logging
+  const loggedKey = "__better_uuid_patch_logged__";
+  // biome-ignore lint/suspicious/noExplicitAny: globalThis extension
+  const global = globalThis as Record<string, unknown>;
+  if (!global[loggedKey]) {
     console.warn(
       "[better-uuid/patch] crypto.randomUUID is now routed through better-uuid. " +
         "All callers in this process (including dependencies) will receive better-uuid IDs. " +
         "Set BETTER_UUID_PATCH=0 to disable.",
     );
-    (globalThis as Record<symbol, boolean>)[loggedSymbol] = true;
+    global[loggedKey] = true;
   }
 }

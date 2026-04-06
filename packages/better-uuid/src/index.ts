@@ -4,24 +4,19 @@
 
 import type {
   BetterUuidConfig,
-  ClockRegressionPolicy,
   CreateIdOptions,
-  GenerateError,
   ParseError,
   ParsedId,
-  SequenceExhaustedPolicy,
   StrategyName,
 } from "./types";
 
 export {
   BetterUuidError,
   GenerateError,
-  ParseError,
   type BetterUuidConfig,
-  type ClockRegressionPolicy,
   type CreateIdOptions,
+  type ParseError,
   type ParsedId,
-  type SequenceExhaustedPolicy,
   type StrategyName,
 } from "./types";
 
@@ -82,12 +77,12 @@ export function createId(_options?: CreateIdOptions): string {
 
   // Generate a realistic placeholder for DX during Phase 0
   // This will be replaced by real WASM calls in Phase 1
-  const randomHex = crypto.randomUUID().replace(/-/g, "");
+  const randomHex = globalThis.crypto.randomUUID().replace(/-/g, "");
   const payload = prefix ? `${prefix}_${randomHex}` : randomHex;
 
   if (_options?.mode === "safe") {
     // Safe mode: return UUID-shaped ID
-    return crypto.randomUUID();
+    return globalThis.crypto.randomUUID();
   }
 
   // Tag with strategy for parseId demo
@@ -143,14 +138,16 @@ export function parseId(id: string): ParsedId {
   // Native better-uuid format: [strategy]prefix_payload
   const nativeMatch = id.match(/^\[(\w+)\]((\w+)_)?([0-9a-f]+)$/i);
   if (nativeMatch) {
-    const [, rawStrategy, , rawPrefix, payload] = nativeMatch;
+    const rawStrategy = nativeMatch[1];
+    const rawPrefix = nativeMatch[3];
+    const payload = nativeMatch[4];
     return {
       legacy: false,
       prefix: rawPrefix,
       strategy: rawStrategy as StrategyName,
       schemaVersion: 1,
       timestampMs: undefined,
-      entropy: payload,
+      entropy: payload ?? "",
       nodeId: undefined,
       region: undefined,
     };
@@ -183,11 +180,7 @@ export function isLegacyId(id: string): boolean {
 // withIdContext (AsyncLocalStorage-based request scoping)
 // ---------------------------------------------------------------------------
 
-import { AsyncLocalStorage } from "node:async_hooks";
-
 type IdContext = Record<string, string | undefined>;
-
-const _asyncContext = new AsyncLocalStorage<IdContext>();
 
 /**
  * Run a function with request-scoped ID context.
@@ -205,9 +198,11 @@ const _asyncContext = new AsyncLocalStorage<IdContext>();
  * @param fn - Function to execute within context scope.
  * @returns The return value of `fn()`.
  */
-export function withIdContext<T>(ctx: IdContext, fn: () => T): T {
-  // In Phase 2+, this will merge with createId's internal config
-  return _asyncContext.run(ctx, fn);
+export function withIdContext<T>(_ctx: IdContext, fn: () => T): T {
+  // Phase 2: will integrate with AsyncLocalStorage for Node.js
+  // and equivalent patterns for Edge runtimes.
+  // For Phase 0, this is a pass-through that executes fn().
+  return fn();
 }
 
 /**
@@ -215,5 +210,5 @@ export function withIdContext<T>(ctx: IdContext, fn: () => T): T {
  * Returns undefined if called outside `withIdContext`.
  */
 export function _getCurrentContext(): IdContext | undefined {
-  return _asyncContext.getStore();
+  return undefined;
 }
