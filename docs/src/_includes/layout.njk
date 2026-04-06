@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ title }} — better-uuid</title>
+  <meta name="description" content="{{ description | default: 'Structured, inspectable identifiers — not opaque random strings' }}">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="docs-container">
+    <header class="docs-header">
+      <a href="/" class="docs-logo">
+        <span class="logo-mark">⬡</span>
+        <span class="logo-text">better-uuid</span>
+      </a>
+      <button class="mobile-menu-btn" aria-label="Toggle menu" onclick="document.body.classList.toggle('menu-open')">☰</button>
+    </header>
+
+    <aside class="docs-sidebar">
+      <nav>
+        <a href="/" class="nav-item{% if page.url == '/' %} active{% endif %}">Overview</a>
+        <a href="/guides/getting-started/" class="nav-item{% if '/getting-started/' in page.url %} active{% endif %}">Getting Started</a>
+        <a href="/guides/migration/" class="nav-item{% if '/migration/' in page.url %} active{% endif %}">Migration Guide</a>
+
+        <div class="nav-group">
+          <div class="nav-group-title">API Reference</div>
+          <a href="/api/createId/" class="nav-item{% if page.url == '/api/createId/' %} active{% endif %}">createId()</a>
+          <a href="/api/parseId/" class="nav-item{% if page.url == '/api/parseId/' %} active{% endif %}">parseId()</a>
+          <a href="/api/isLegacyId/" class="nav-item{% if page.url == '/api/isLegacyId/' %} active{% endif %}">isLegacyId()</a>
+          <a href="/api/configure/" class="nav-item{% if page.url == '/api/configure/' %} active{% endif %}">configure()</a>
+          <a href="/api/withIdContext/" class="nav-item{% if page.url == '/api/withIdContext/' %} active{% endif %}">withIdContext()</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">Compat Layer</div>
+          <a href="/api/compat-uuid/" class="nav-item{% if page.url == '/api/compat-uuid/' %} active{% endif %}">compat/uuid</a>
+          <a href="/api/compat-nanoid/" class="nav-item{% if page.url == '/api/compat-nanoid/' %} active{% endif %}">compat/nanoid</a>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">Deep Dive</div>
+          <a href="/guides/wire-format/" class="nav-item{% if '/wire-format/' in page.url %} active{% endif %}">Wire Format</a>
+          <a href="/guides/collision-model/" class="nav-item{% if '/collision-model/' in page.url %} active{% endif %}">Collision Model</a>
+          <a href="/guides/failure-modes/" class="nav-item{% if '/failure-modes/' in page.url %} active{% endif %}">Failure Modes</a>
+          <a href="/guides/security/" class="nav-item{% if '/security/' in page.url %} active{% endif %}">Security</a>
+        </div>
+
+        <div class="nav-external">
+          <a href="https://github.com/better-uuid/better-uuid" target="_blank">GitHub ↗</a>
+          <a href="https://www.npmjs.com/package/better-uuid" target="_blank">npm ↗</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="docs-main">
+      <div class="docs-content">
+        {{ content | safe }}
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Copy button for code blocks
+    document.querySelectorAll('pre > code').forEach(block => {
+      const btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(block.textContent);
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+      block.parentElement.style.position = 'relative';
+      block.parentElement.appendChild(btn);
+    });
+
+    // Anchor links for headers
+    document.querySelectorAll('main h2, main h3, main h4').forEach(h => {
+      const id = h.id || h.textContent.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      h.id = id;
+      const link = document.createElement('a');
+      link.className = 'anchor';
+      link.href = '#' + id;
+      link.textContent = '#';
+      link.setAttribute('aria-label', 'Link to this section');
+      h.appendChild(link);
+    });
+
+    // Mobile menu close on main click
+    document.querySelector('.docs-main')?.addEventListener('click', () => {
+      document.body.classList.remove('menu-open');
+    });
+  </script>
+</body>
+</html>

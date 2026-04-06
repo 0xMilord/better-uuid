@@ -1,0 +1,165 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Version bump (patch / minor / major)"
+        required: true
+        default: "patch"
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      summary:
+        description: "One-line release summary"
+        required: true
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  NODE_VERSION: "22"
+  RELEASE_BUMP: ${{ github.event.inputs.bump }}
+  RELEASE_SUMMARY: ${{ github.event.inputs.summary }}
+
+jobs:
+  release:
+    name: Build + Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Get pnpm store path
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run Rust gates
+        run: |
+          cargo fmt --check
+          cargo clippy --all-targets --all-features -- -D warnings
+          cargo test --all-features
+
+      - name: Run TypeScript gates
+        run: |
+          pnpm typecheck
+          pnpm test
+
+      - name: Read current version
+        id: version
+        run: |
+          CURRENT=$(node -p "require('./packages/better-uuid/package.json').version")
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+
+      - name: Compute new version
+        id: newversion
+        run: |
+          IFS='.' read -r MAJOR MINOR PATCH <<< "${{ steps.version.outputs.current }}"
+          case "${{ github.event.inputs.bump }}" in
+            patch)  PATCH=$((PATCH + 1)) ;;
+            minor)  MINOR=$((MINOR + 1)); PATCH=0 ;;
+            major)  MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+          esac
+          echo "version=$MAJOR.$MINOR.$PATCH" >> $GITHUB_OUTPUT
+
+      - name: Write version to package.json
+        run: |
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('packages/better-uuid/package.json', 'utf8'));
+            pkg.version = '${{ steps.newversion.outputs.version }}';
+            fs.writeFileSync('packages/better-uuid/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+      - name: Update CHANGELOG.md
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          NEW="${{ steps.newversion.outputs.version }}"
+          SUMMARY="${{ github.event.inputs.summary }}"
+          CHANGELOG="packages/better-uuid/CHANGELOG.md"
+          if [ ! -f "$CHANGELOG" ]; then
+            echo "# Changelog" > "$CHANGELOG"
+            echo "" >> "$CHANGELOG"
+          fi
+          {
+            echo "## $NEW ($DATE)"
+            echo ""
+            echo "- $SUMMARY"
+            echo ""
+            cat "$CHANGELOG"
+          } > "$CHANGELOG.tmp"
+          mv "$CHANGELOG.tmp" "$CHANGELOG"
+
+      - name: Commit + tag
+        run: |
+          git add packages/better-uuid/package.json packages/better-uuid/CHANGELOG.md
+          git commit -m "release: v${{ steps.newversion.outputs.version }} — ${{ github.event.inputs.summary }}"
+          git tag "v${{ steps.newversion.outputs.version }}"
+
+      - name: Publish to npm
+        run: pnpm --filter better-uuid publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Push to origin
+        run: |
+          git push origin main
+          git push origin "v${{ steps.newversion.outputs.version }}"
+
+      - name: Smoke test
+        run: |
+          SMOKE=$(mktemp -d)
+          cd "$SMOKE"
+          npm init -y >/dev/null 2>&1
+          sleep 5
+          npm install "better-uuid@${{ steps.newversion.outputs.version }}" >/dev/null 2>&1
+          RESULT=$(node -e "const b = require('better-uuid'); console.log(typeof b.createId)" 2>/dev/null)
+          cd -
+          rm -rf "$SMOKE"
+          if [ "$RESULT" = "function" ]; then
+            echo "✅ Smoke test passed"
+          else
+            echo "⚠️ Smoke test result: $RESULT"
+          fi
