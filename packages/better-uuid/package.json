@@ -85,7 +85,7 @@
     "lint": "biome check src/"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.4.11",
     "@types/node": "^25.5.2",
     "@vitest/coverage-v8": "^3.0.0",
     "typescript": "^5.7.3",
